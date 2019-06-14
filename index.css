@@ -1,0 +1,91 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+.container{
+    margin: 50px;
+}
+
+.slider{
+    height: 5px;
+    width: 300px;
+    background: #e5e5e5;
+    border-radius: 3px;
+    position: relative;
+    margin: 0px 0 40px 0;
+    cursor: pointer;
+}
+.slider:before{
+    position:absolute;
+    content:'';
+    top:-10px;
+    right:-10px;
+    left:-10px;
+    bottom:-10px;
+}
+.vertical{
+    height: 300px;
+    width: 5px;
+    background: #e5e5e5;
+    border-radius: 3px;
+    position: relative;
+    margin: 0px 0 40px 0;
+}
+
+.slider-handler{
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #e75735;
+    position: absolute;
+    top:-8px;
+    cursor: pointer;
+}
+
+.handlerPosition{
+    margin: 20px 0 0 200px;
+}
+.handlerPosition{
+    user-select: none;
+    -moz-user-select: -moz-none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.popup{
+    width: 40px;
+    height: 20px;
+    border-radius: 6px;
+    color: white;
+    background: #e75735;
+    position: absolute;
+    top: -45px;
+    left: -20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px 0 5px 0;
+    user-select: none;
+    -moz-user-select: -moz-none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.popup::after{
+        content: ''; 
+        position: absolute; /* Абсолютное позиционирование */
+        left: 12px; bottom: -16px; /* Положение треугольника */
+        border: 8px solid transparent; /* Прозрачные границы */
+        border-top: 8px solid #e75735; /* Добавляем треугольник */
+       }
+
+input[type="text"] {
+    -moz-user-select: -moz-none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
