@@ -43,7 +43,9 @@ SLIDER.Model = function(){
     var that = this;
     this.mousePosition = {};
     this.modelChangedSubject = SLIDER.makeObservableSubject();
-   
+    var minValue = 100,
+        maxValue = 500,
+        step = 25;
     
    
     $(document).mousemove(function (event) {
