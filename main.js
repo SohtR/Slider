@@ -60,7 +60,7 @@ SLIDER.Model = function(){
     this.getMousePositionRelativeToSlider = function(){
         newMousePositionX = that.mousePosition.x - that.sliderLeft;
         newMousePositionY = that.mousePosition.y - that.sliderTop;
-        return newMousePosition = {x: newMousePositionX, y: newMousePositionY};
+        return that.newMousePosition = {x: newMousePositionX, y: newMousePositionY};
     };
 
 };
@@ -70,10 +70,14 @@ SLIDER.Controller = function(model, view){
     model.sliderWidth = view.slider.width();
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
-    console.log(model.getMousePositionRelativeToSlider());
     
-    
-    
+    view.slider.mousemove(function(){
+        model.getMousePositionRelativeToSlider();
+        view.slider.mousedown(function(){
+            view.handler.animate({"left": model.newMousePosition.x - 10 + "px"}, 500);
+            view.handler.clearQueue();
+        });
+    });
 };
 
 SLIDER.View = function (rootObject) {
@@ -84,6 +88,17 @@ SLIDER.View = function (rootObject) {
     that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
     that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
     
+    that.handler.mousedown(function() {
+        $(document).mousemove(function () {
+            that.popup.show();
+        });
+        $(document).mouseup(function(){
+            $(document).off('mousemove');
+            $(document).off('mouseup');
+            that.popup.hide();
+        });
+    });
+
 };
 
 
