@@ -57,6 +57,12 @@ SLIDER.Model = function(){
         return that.mousePosition;
     };
 
+    this.getMousePositionRelativeToSlider = function(){
+        newMousePositionX = that.mousePosition.x - that.sliderLeft;
+        newMousePositionY = that.mousePosition.y - that.sliderTop;
+        return newMousePosition = {x: newMousePositionX, y: newMousePositionY};
+    };
+
 };
    
 
@@ -64,7 +70,7 @@ SLIDER.Controller = function(model, view){
     model.sliderWidth = view.slider.width();
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
-    console.log(model.getMousePosition());
+    console.log(model.getMousePositionRelativeToSlider());
     
     
     

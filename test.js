@@ -15,4 +15,6 @@ describe("Mouse position relative to slider", function(){
         assert.typeOf(model.getMousePositionRelativeToSlider(), 'object');
     });
 
+    
+
 });
