@@ -5,14 +5,14 @@ var controller = new SLIDER.Controller(model, view);
 
 describe("getMousePosition", function(){
     it("является ли объектом", function(){
-        assert.typeOf(model.mousePosition, 'object');
+        assert.typeOf(model.getMousePosition(), 'object');
     });
 
 });
 
 describe("Mouse position relative to slider", function(){
     it("является ли объектом", function(){
-        assert.typeOf(model.mousePosition, 'object');
+        assert.typeOf(model.getMousePositionRelativeToSlider(), 'object');
     });
 
 });
