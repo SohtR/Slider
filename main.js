@@ -41,11 +41,22 @@ SLIDER.makeObservableSubject = function () {
 
 SLIDER.Model = function(){
     var that = this;
+    this.mousePosition = {};
     this.modelChangedSubject = SLIDER.makeObservableSubject();
+   
+    
+   
+    $(document).mousemove(function (event) {
+        event = event || window.event;
+        var posX = event.pageX;
+        var posY = event.pageY;
+        that.mousePosition = {x: posX, y: posY};
+        that.modelChangedSubject.notifyObservers();
+    });
+     this.getMousePosition = function(){
+        return that.mousePosition;
+    };
 
-    that.sliderWidth;
-    that.sliderLeft;
-    that.sliderTop;
 };
    
 
@@ -53,6 +64,10 @@ SLIDER.Controller = function(model, view){
     model.sliderWidth = view.slider.width();
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
+    console.log(model.getMousePosition());
+    
+    
+    
 };
 
 SLIDER.View = function (rootObject) {
@@ -66,8 +81,10 @@ SLIDER.View = function (rootObject) {
 };
 
 
-$(document).ready(function () {
-    var view = new SLIDER.View($('.container').appendTo($("body")));
-    var model = new SLIDER.Model();
-    var controller = new SLIDER.Controller(model, view);
-});
+
+// $(document).ready(function () {
+//     var view = new SLIDER.View($('.container').appendTo($(".container")));
+//     var model = new SLIDER.Model();
+//     var controller = new SLIDER.Controller(model, view);
+    
+// });
