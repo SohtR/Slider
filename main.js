@@ -36,86 +36,23 @@ SLIDER.makeObservableSubject = function () {
         addObserver: addObserver,
         removeObserver: removeObserver,
         notifyObservers: notifyObservers,
-        notify: notifyObservers
     };
 };
 
 SLIDER.Model = function(){
     var that = this;
-    
-    var minValue = 100;
-    var maxValue = 500;
-    var step = 25;
+    this.modelChangedSubject = SLIDER.makeObservableSubject();
 
-    var mousePos;
-    that.newPos = {};
-   
-    that.pos = {};
     that.sliderWidth;
     that.sliderLeft;
     that.sliderTop;
-    this.modelChangedSubject = SLIDER.makeObservableSubject();
-    
-    that.getPercentOfSlider = function(){                       // Вычисляется процент от всего слайдера
-        return Math.round((newPos/that.sliderWidth)*100);
-    };
-    this.getMousePosition = function(){
-        $(document).mousemove(function (event) {
-        event = event || window.event;
-        var posX = event.pageX;
-        var posY = event.pageY;
-        that.pos = {x: posX, y: posY};
-        that.modelChangedSubject.notifyObservers();
-        });
-    };
-    
-    this.getMousePositionRelativeToSliderSubject = SLIDER.makeObservableSubject();
-    this.getMousePositionRelativeToSlider = function(){
-        that.getMousePosition();
-        newMousePositionX = that.pos.x - that.sliderLeft;
-        newMousePositionY = that.pos.y - that.sliderTop;
-        that.newPos = {x: newMousePositionX, y: newMousePositionY};
-        return newPos = {x: newMousePositionX, y: newMousePositionY};
-        that.getMousePositionRelativeToSliderSubject.notifyObservers();
-    };
-    
-
 };
+   
 
 SLIDER.Controller = function(model, view){
-    
-    model.modelChangedSubject.addObserver(function () {
-        
-    });
-
-    // model.getMousePosition();  //   вызвать функцию из модели
-    // console.log(model.pos); //      затем можно использовать
-
     model.sliderWidth = view.slider.width();
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
-
-    model.getMousePositionRelativeToSliderSubject.addObserver(function () {
-        // model.getMousePositionRelativeToSlider();
-        // console.log(model.newPos);
-    });
-    
-    
-    
-        view.slider.mousemove(function(){
-            model.getMousePositionRelativeToSlider();
-            view.slider.mousedown(function(){
-                view.handler.animate({"left": model.newPos.x-10+ "px"}, 500);
-                view.handler.clearQueue();
-                // $inputPos.val(handlerPosNoMouse);
-            });
-        });
-
-        
-    
-        
-    
-    
 };
 
 SLIDER.View = function (rootObject) {
