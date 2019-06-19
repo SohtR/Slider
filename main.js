@@ -56,7 +56,7 @@ SLIDER.Model = function(){
 
         that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
         that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
-       
+        that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
 
         that.modelChangedSubject.notifyObservers();
     });
@@ -81,8 +81,12 @@ SLIDER.Model = function(){
     };
 
     this.getHandlerPositionWithRange = function(minValue, maxValue, percentOfSlider){
-        return handlerPositionWithRange = ((maxValue-minValue)*(percentOfSlider/100))+minValue;
-    }
+        return ((maxValue-minValue)*(percentOfSlider/100))+minValue;
+    };
+    
+    this.getHandlerPositionWithStep = function(handlerPosition, step){
+        return (Math.round(handlerPosition/step))*step;
+    };
     
     
     
