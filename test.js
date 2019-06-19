@@ -33,3 +33,9 @@ describe("Handler position with step", function(){
         assert.equal(model.getHandlerPositionWithStep(330, 50), 350);
     });
 });
+
+describe("Handler position relative to slider", function(){
+    it("позиция ползунка относительно ширины слайдера, рассчитанная из старого диапазона", function(){
+        assert.equal(model.getHandlerPositionToSlider(250, 0, 500, 300), 150);
+    });
+});

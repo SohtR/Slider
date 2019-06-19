@@ -88,9 +88,6 @@ SLIDER.Model = function(){
         return (Math.round(handlerPosition/step))*step;
     };
     
-    
-    
-    
 };
    
 
@@ -101,7 +98,7 @@ SLIDER.Controller = function(model, view){
     
     view.slider.mousemove(function(){
         model.getMousePositionRelativeToSlider();
-        view.slider.mousedown(function(){
+        view.slider.click(function(){
             view.handler.animate({"left": model.newMousePosition.x - 10 + "px"}, 500);
             view.handler.clearQueue();
         });
