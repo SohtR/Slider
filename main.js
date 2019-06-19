@@ -53,6 +53,9 @@ SLIDER.Model = function(){
         var posX = event.pageX;
         var posY = event.pageY;
         that.mousePosition = {x: posX, y: posY};
+
+        that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
+
         that.modelChangedSubject.notifyObservers();
     });
      this.getMousePosition = function(){
@@ -65,10 +68,17 @@ SLIDER.Model = function(){
         return that.newMousePosition = {x: newMousePositionX, y: newMousePositionY};
     };
 
-    this.getPercentOfSlider = function(mousePosition, sliderWidth){
-        return Math.round((mousePosition/sliderWidth)*100);
+    this.getPercentOfSlider = function(newMousePosition, sliderWidth){
+        that.getMousePosition();
+        that.getMousePositionRelativeToSlider();
+        if(sliderWidth)
+        return (Math.round((newMousePosition/sliderWidth)*100)/100);
+        else {
+            throw new Error("slider width shouldn't be 0");
+        }
     };
-
+    
+    
 };
    
 
