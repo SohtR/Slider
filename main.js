@@ -46,30 +46,37 @@ SLIDER.Model = function(){
     that.minValue = 100;
     that.maxValue = 500;
     that.step = 25;
-    
+     
    
-    $(document).mousemove(function (event) {
+    $('html').mousemove(function (event) {
         event = event || window.event;
         var posX = event.pageX;
         var posY = event.pageY;
         that.mousePosition = {x: posX, y: posY};
-
+        // console.log(that.mousePosition);
+        
+       
+        that.newMousePosition = that.getMousePositionRelativeToSlider();
+        // console.log( that.newMousePosition);
         that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
+        // console.log(`that.percentOfSlider:${that.percentOfSlider}`);
         that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
+        // console.log(`that.handlerPositionWithRange:${that.handlerPositionWithRange}`);
         that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
-        that.handlerPositionToSlider = that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
+        // console.log(`that.handlerPositionWithStep:${that.handlerPositionWithStep}`);
+        that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
         // console.log(that.handlerPositionToSlider);
         
         that.modelChangedSubject.notifyObservers();
     });
-     this.getMousePosition = function(){
+    this.getMousePosition = function(){
         return that.mousePosition;
     };
 
     this.getMousePositionRelativeToSlider = function(){
         newMousePositionX = that.mousePosition.x - that.sliderLeft;
         newMousePositionY = that.mousePosition.y - that.sliderTop;
-        return that.newMousePosition = {x: newMousePositionX, y: newMousePositionY};
+        return {x: newMousePositionX, y: newMousePositionY};
     };
 
     this.getPercentOfSlider = function(newMousePosition, sliderWidth){
@@ -92,8 +99,11 @@ SLIDER.Model = function(){
         return (Math.round(handlerPosition/step))*step;
     };
     
+    this.handlerPositionToSliderChangedSubject = SLIDER.makeObservableSubject();
     this.getHandlerPositionToSlider = function(HandlerPositionWithStep, minValue, maxValue, sliderWidth){
-        return sliderWidth*((HandlerPositionWithStep - minValue) / (maxValue - minValue)); 
+        that.handlerPositionToSlider = sliderWidth*((HandlerPositionWithStep - minValue) / (maxValue - minValue)); 
+        that.handlerPositionToSliderChangedSubject.notifyObservers();
+        return  that.handlerPositionToSlider;
     };
     
 
@@ -101,26 +111,23 @@ SLIDER.Model = function(){
    
 
 SLIDER.Controller = function(model, view){
+    model.slider = view.slider;
     model.sliderWidth = view.slider.width();
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
-    
-    view.handlerPositionToSlider = model.handlerPositionToSlider;
 
     view.slider.mousemove(function(){
-        model.getMousePositionRelativeToSlider();
         view.slider.click(function(){
             view.handler.animate({"left": model.handlerPositionToSlider - 10 + "px"}, 500);
             view.handler.clearQueue();
         });
     });
-
-    view.handler.mousedown(function() {
-        $(document).mousemove(function () {
+    
+    view.handler.on('mousedown', function() {
+        $(document).on('mousemove', function () {
             view.popup.show();
             view.handler.css("left", model.handlerPositionToSlider -10);
             view.popup.css("left", model.handlerPositionToSlider -20);
-
             view.popup.text(model.handlerPositionWithStep);
         });
         $(document).mouseup(function(){
@@ -129,7 +136,11 @@ SLIDER.Controller = function(model, view){
             view.popup.hide();
         });
     });
+   
+    
+    
 };
+
 
 SLIDER.View = function (rootObject) {
     var that = this;
@@ -143,9 +154,9 @@ SLIDER.View = function (rootObject) {
 
 
 
-// $(document).ready(function () {
-//     var view = new SLIDER.View($('.container').appendTo($(".container")));
-//     var model = new SLIDER.Model();
-//     var controller = new SLIDER.Controller(model, view);
+$(document).ready(function () {
+    var view = new SLIDER.View($('.container').appendTo($(".container")));
+    var model = new SLIDER.Model();
+    var controller = new SLIDER.Controller(model, view);
     
-// });
+});
