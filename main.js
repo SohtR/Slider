@@ -65,6 +65,10 @@ SLIDER.Model = function(){
         return that.newMousePosition = {x: newMousePositionX, y: newMousePositionY};
     };
 
+    this.getPercentOfSlider = function(mousePosition, sliderWidth){
+        return Math.round((mousePosition/sliderWidth)*100);
+    };
+
 };
    
 
