@@ -43,9 +43,9 @@ SLIDER.Model = function(){
     var that = this;
     this.mousePosition = {};
     this.modelChangedSubject = SLIDER.makeObservableSubject();
-    var minValue = 100,
-        maxValue = 500,
-        step = 25;
+    that.minValue = 100;
+    that.maxValue = 500;
+    that.step = 25;
     
    
     $(document).mousemove(function (event) {
@@ -55,6 +55,8 @@ SLIDER.Model = function(){
         that.mousePosition = {x: posX, y: posY};
 
         that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
+        that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
+       
 
         that.modelChangedSubject.notifyObservers();
     });
@@ -72,11 +74,17 @@ SLIDER.Model = function(){
         that.getMousePosition();
         that.getMousePositionRelativeToSlider();
         if(sliderWidth)
-        return (Math.round((newMousePosition/sliderWidth)*100)/100);
+        return Math.round((newMousePosition/sliderWidth)*100);
         else {
             throw new Error("slider width shouldn't be 0");
         }
     };
+
+    this.getHandlerPositionWithRange = function(minValue, maxValue, percentOfSlider){
+        return handlerPositionWithRange = ((maxValue-minValue)*(percentOfSlider/100))+minValue;
+    }
+    
+    
     
     
 };

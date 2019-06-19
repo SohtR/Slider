@@ -18,13 +18,13 @@ describe("Mouse position relative to slider", function(){
 
 describe("Mouse position in percent of entire slider", function(){
     it("сколько процентов", function(){
-        assert.equal(model.getPercentOfSlider(50, 100), 0.5);
+        assert.equal(model.getPercentOfSlider(50, 100), 50);
     });
 });
 
 describe("Handler position with min and max values", function(){
     it("позиция ползунка относительно нового диапазона, рассчитанная из процента", function(){
-        assert.equal(model.getHandlerPositionWithMinMax(0, 200, 50), 100);
+        assert.equal(model.getHandlerPositionWithRange(0, 200, 50), 100);
     });
 
 });
