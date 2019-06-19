@@ -26,5 +26,10 @@ describe("Handler position with min and max values", function(){
     it("позиция ползунка относительно нового диапазона, рассчитанная из процента", function(){
         assert.equal(model.getHandlerPositionWithRange(0, 200, 50), 100);
     });
+});
 
+describe("Handler position with step", function(){
+    it("позиция ползунка, рассчитанная с учетом заданного шага", function(){
+        assert.equal(model.getHandlerPositionWithStep(330, 50), 350);
+    });
 });
