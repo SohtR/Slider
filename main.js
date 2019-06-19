@@ -75,8 +75,10 @@ SLIDER.Model = function(){
     this.getPercentOfSlider = function(newMousePosition, sliderWidth){
         that.getMousePosition();
         that.getMousePositionRelativeToSlider();
-        if(sliderWidth)
-        return Math.round((newMousePosition/sliderWidth)*100);
+        if(sliderWidth){
+            newMousePosition = Math.min(Math.max(0, newMousePosition), sliderWidth);
+            return Math.round((newMousePosition/sliderWidth)*100);
+        }
         else {
             throw new Error("slider width shouldn't be 0");
         }
@@ -103,11 +105,28 @@ SLIDER.Controller = function(model, view){
     model.sliderLeft = view.slider.offset().left;
     model.sliderTop = view.slider.offset().top;
     
+    view.handlerPositionToSlider = model.handlerPositionToSlider;
+
     view.slider.mousemove(function(){
         model.getMousePositionRelativeToSlider();
         view.slider.click(function(){
-            view.handler.animate({"left": model.newMousePosition.x - 10 + "px"}, 500);
+            view.handler.animate({"left": model.handlerPositionToSlider - 10 + "px"}, 500);
             view.handler.clearQueue();
+        });
+    });
+
+    view.handler.mousedown(function() {
+        $(document).mousemove(function () {
+            view.popup.show();
+            view.handler.css("left", model.handlerPositionToSlider -10);
+            view.popup.css("left", model.handlerPositionToSlider -20);
+
+            view.popup.text(model.handlerPositionWithStep);
+        });
+        $(document).mouseup(function(){
+            $(document).off('mousemove');
+            $(document).off('mouseup');
+            view.popup.hide();
         });
     });
 };
@@ -120,17 +139,6 @@ SLIDER.View = function (rootObject) {
     that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
     that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
     
-    that.handler.mousedown(function() {
-        $(document).mousemove(function () {
-            that.popup.show();
-        });
-        $(document).mouseup(function(){
-            $(document).off('mousemove');
-            $(document).off('mouseup');
-            that.popup.hide();
-        });
-    });
-
 };
 
 
