@@ -35,7 +35,8 @@ html,body {margin: 0px; padding: 0px; }
     border-radius: 50%;
     background: #e75735;
     position: absolute;
-    top:-8px;
+    left:-7px;
+    top: -8px;
     cursor: pointer;
 }
 
@@ -77,7 +78,35 @@ html,body {margin: 0px; padding: 0px; }
         left: 12px; bottom: -16px; /* Положение треугольника */
         border: 8px solid transparent; /* Прозрачные границы */
         border-top: 8px solid #e75735; /* Добавляем треугольник */
-       }
+}
+.popup.vertical{
+    width: 40px;
+    height: 20px;
+    border-radius: 6px;
+    color: white;
+    background: #e75735;
+    position: absolute;
+    top: -45px;
+    left: -20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px 0 5px 0;
+    user-select: none;
+    -moz-user-select: -moz-none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.popup.vertical::after{
+        content: ''; 
+        position: absolute; /* Абсолютное позиционирование */
+        left: 12px; left: -16px; /* Положение треугольника */
+        border: 8px solid transparent; /* Прозрачные границы */
+        border-top: 8px solid #e75735; /* Добавляем треугольник */
+}
 
 input[type="text"] {
     -moz-user-select: -moz-none;

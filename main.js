@@ -60,7 +60,11 @@
             
                 that.newMousePosition = that.getMousePositionRelativeToSlider();
                 // console.log( that.newMousePosition);
-                that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
+                if(that.vertical && that.vertical !== 'undefined'){
+                    that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.y, that.sliderWidth);
+                }else{
+                    that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
+                }
                 // console.log(`that.percentOfSlider:${that.percentOfSlider}`);
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 // console.log(`that.handlerPositionWithRange:${that.handlerPositionWithRange}`);
@@ -117,46 +121,48 @@
         SLIDER.Controller = function(model, view, opts){
             var options = opts;
             model.slider = view.slider;
+            model.vertical = options.vertical;
+            view.vertical = options.vertical;
             
             if (typeof(options.width) != 'undefined'){
                 view.slider.css('width',(options.width+'px'));
             }
 
-            model.minValue = options.minValue;
+            model.minValue = options.minValue;                  //// Передача опций в модель
             model.maxValue = options.maxValue;
             model.step = options.step;
             model.sliderWidth = options.width;
             model.startPosition = options.startPosition;
             
+            if(options.vertical && options.vertical !== 'undefined'){
+                view.slider.addClass('vertical').css("width", 5).css("height", options.width);
+                var direction = "top";
+            }else{
+                var direction = "left";
+            }
+            
+            
             var newStartPosition = model.getHandlerPositionWithStep(options.startPosition, options.step);
             newStartPosition = model.getHandlerPositionToSlider(newStartPosition, options.minValue, options.maxValue, options.width);
-            view.handler.css("left", newStartPosition - 10)
+            view.handler.css(direction, newStartPosition - 10);
+            
 
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
-            
-            // view.startPosition = model.startPosition;
-
-            
-            
 
             view.slider.mousemove(function(){
                 view.slider.click(function(){
-                    view.handler.animate({"left": model.handlerPositionToSlider - 10 + "px"}, 500);
-                    view.handler.clearQueue();
+                        view.handler.animate({direction: model.handlerPositionToSlider - 10 + "px"}, 500);
+                        view.handler.clearQueue();
                 });
             });
             
             view.handler.on('mousedown', function() {
                 $(document).on('mousemove', function () {
                     view.popup.show();
-                    view.handler.css("left", model.handlerPositionToSlider -10);
-                    view.popup.css("left", model.handlerPositionToSlider -20);
+                    view.handler.css(direction, model.handlerPositionToSlider -10);
+                    view.popup.css(direction, model.handlerPositionToSlider -20);
                     view.popup.text(model.handlerPositionWithStep);
-                    console.log(model.handlerPositionToSlider);
-                    console.log(model.handlerPositionWithStep);
-                    
-                    
                 });
                 $(document).mouseup(function(){
                     $(document).off('mousemove');
@@ -176,10 +182,14 @@
             this.viewChangedSubject = SLIDER.makeObservableSubject();
             // $container.append('<div class="slider"><div class="popup"></div><div class="slider-handler"></div></div><input type="text" class="handlerPosition">');
             that.slider = $('<div class="slider"></div>').appendTo(rootObject);
-            
-            
             that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
+            that.verticalCheck = function(){
+                if (that.vertical && that.vertical !== 'undefined'){
+                    that.popup.addClass('vertical');
+                }
+            };
+            that.verticalCheck();
             
         };
 
@@ -200,7 +210,8 @@
             minValue: 0,
             maxValue: 100,
             step: 1,
-            startPosition: 0
+            startPosition: 0,
+            vertical: false
         };
     
        
@@ -214,6 +225,7 @@ $(document).ready(function() {
             minValue: 100,
             maxValue: 500,
             step: 50,
-            startPosition:300
+            startPosition:300,
+            vertical: true
         });
 });
