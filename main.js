@@ -41,6 +41,7 @@
                 notifyObservers: notifyObservers,
             };
         };
+/////// MODEL ////////////////////////////////////////////////////////////////////
 
         SLIDER.Model = function(){
             var that = this;
@@ -110,6 +111,7 @@
 
         };
         
+//////// CONTROLLER //////////////////////////////////////////
 
         SLIDER.Controller = function(model, view, opts){
             var options = opts;
@@ -123,8 +125,11 @@
             model.maxValue = options.maxValue;
             model.step = options.step;
 
+            model.getPercentOfSlider(options.startPosition, options.width);
+            options.startPosition
+            // view.handler.css("left", 150);
 
-            model.sliderWidth = view.slider.width();
+            model.sliderWidth = options.width;
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
 
@@ -157,7 +162,7 @@
             
         };
 
-
+/////// VIEW ////////
         SLIDER.View = function (rootObject) {
             var that = this;
             
@@ -187,19 +192,21 @@
             width: 300,
             minValue: 0,
             maxValue: 100,
-            step: 1
+            step: 1,
+            startPosition: 50
         };
     
        
 })(jQuery);
 
 $(document).ready(function() {
-    $(".container.1").MySlider();
-    $(".container.2").MySlider(
+    $(".1").MySlider();
+    $(".2").MySlider(
         {
             width: 200,
             minValue: 100,
             maxValue: 500,
-            step: 50
+            step: 50,
+            startPosition:100
         });
 });
