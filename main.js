@@ -68,7 +68,7 @@
                 // console.log(`that.handlerPositionWithStep:${that.handlerPositionWithStep}`);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
                 // console.log(that.handlerPositionToSlider);
-                
+
                 that.modelChangedSubject.notifyObservers();
             });
             this.getMousePosition = function(){
@@ -108,6 +108,7 @@
                 return  that.handlerPositionToSlider;
             };
             
+            
 
         };
         
@@ -124,14 +125,20 @@
             model.minValue = options.minValue;
             model.maxValue = options.maxValue;
             model.step = options.step;
-
-            model.getPercentOfSlider(options.startPosition, options.width);
-            options.startPosition
-            // view.handler.css("left", 150);
-
             model.sliderWidth = options.width;
+            model.startPosition = options.startPosition;
+            
+            var newStartPosition = model.getHandlerPositionWithStep(options.startPosition, options.step);
+            newStartPosition = model.getHandlerPositionToSlider(newStartPosition, options.minValue, options.maxValue, options.width);
+            view.handler.css("left", newStartPosition - 10)
+
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
+            
+            // view.startPosition = model.startPosition;
+
+            
+            
 
             view.slider.mousemove(function(){
                 view.slider.click(function(){
@@ -193,7 +200,7 @@
             minValue: 0,
             maxValue: 100,
             step: 1,
-            startPosition: 50
+            startPosition: 0
         };
     
        
@@ -207,6 +214,6 @@ $(document).ready(function() {
             minValue: 100,
             maxValue: 500,
             step: 50,
-            startPosition:100
+            startPosition:300
         });
 });
