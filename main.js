@@ -46,9 +46,7 @@
             var that = this;
             this.mousePosition = {};
             this.modelChangedSubject = SLIDER.makeObservableSubject();
-            that.minValue = 100;
-            that.maxValue = 500;
-            that.step = 25;
+            
             
         
             $('html').mousemove(function (event) {
@@ -113,8 +111,19 @@
         };
         
 
-        SLIDER.Controller = function(model, view){
+        SLIDER.Controller = function(model, view, opts){
+            var options = opts;
             model.slider = view.slider;
+            
+            if (typeof(options.width) != 'undefined'){
+                view.slider.css('width',(options.width+'px'));
+            }
+
+            model.minValue = options.minValue;
+            model.maxValue = options.maxValue;
+            model.step = options.step;
+
+
             model.sliderWidth = view.slider.width();
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
@@ -132,6 +141,10 @@
                     view.handler.css("left", model.handlerPositionToSlider -10);
                     view.popup.css("left", model.handlerPositionToSlider -20);
                     view.popup.text(model.handlerPositionWithStep);
+                    console.log(model.handlerPositionToSlider);
+                    console.log(model.handlerPositionWithStep);
+                    
+                    
                 });
                 $(document).mouseup(function(){
                     $(document).off('mousemove');
@@ -145,16 +158,14 @@
         };
 
 
-        SLIDER.View = function (rootObject, opts) {
+        SLIDER.View = function (rootObject) {
             var that = this;
-            var options = opts;
+            
             this.viewChangedSubject = SLIDER.makeObservableSubject();
             // $container.append('<div class="slider"><div class="popup"></div><div class="slider-handler"></div></div><input type="text" class="handlerPosition">');
             that.slider = $('<div class="slider"></div>').appendTo(rootObject);
             
-            if (typeof(options.width) != 'undefined'){
-                that.slider.css('width',(options.width+'px'));
-            }
+            
             that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
             
@@ -166,14 +177,17 @@
             var opts = $.extend({}, $.fn.MySlider.defaults, options);
 
             return this.each(function () {
-            var view = new SLIDER.View($(this), opts);
+            var view = new SLIDER.View($(this));
             var model = new SLIDER.Model();
-            var controller = new SLIDER.Controller(model, view);
+            var controller = new SLIDER.Controller(model, view, opts);
             });
         }
 
         $.fn.MySlider.defaults = {
-            width: 300
+            width: 300,
+            minValue: 0,
+            maxValue: 100,
+            step: 1
         };
     
        
@@ -183,6 +197,9 @@ $(document).ready(function() {
     $(".container.1").MySlider();
     $(".container.2").MySlider(
         {
-            width: 200
+            width: 200,
+            minValue: 100,
+            maxValue: 500,
+            step: 50
         });
 });
