@@ -46,7 +46,7 @@
         SLIDER.Model = function(){
             var that = this;
             this.mousePosition = {};
-            this.modelChangedSubject = SLIDER.makeObservableSubject();
+            // this.modelChangedSubject = SLIDER.makeObservableSubject();
             
             
         
@@ -73,7 +73,7 @@
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
                 // console.log(that.handlerPositionToSlider);
 
-                that.modelChangedSubject.notifyObservers();
+                // that.modelChangedSubject.notifyObservers();
             });
             this.getMousePosition = function(){
                 return that.mousePosition;
@@ -105,10 +105,10 @@
                 return (Math.round(handlerPosition/step))*step;
             };
             
-            this.handlerPositionToSliderChangedSubject = SLIDER.makeObservableSubject();
+            // this.handlerPositionToSliderChangedSubject = SLIDER.makeObservableSubject();
             this.getHandlerPositionToSlider = function(HandlerPositionWithStep, minValue, maxValue, sliderWidth){
                 that.handlerPositionToSlider = sliderWidth*((HandlerPositionWithStep - minValue) / (maxValue - minValue)); 
-                that.handlerPositionToSliderChangedSubject.notifyObservers();
+                // that.handlerPositionToSliderChangedSubject.notifyObservers();
                 return  that.handlerPositionToSlider;
             };
             
@@ -121,8 +121,9 @@
         SLIDER.Controller = function(model, view, opts){
             var options = opts;
             model.slider = view.slider;
-            model.vertical = options.vertical;
             view.vertical = options.vertical;
+            model.vertical = options.vertical;
+            
             
             if (typeof(options.width) != 'undefined'){
                 view.slider.css('width',(options.width+'px'));
@@ -136,9 +137,12 @@
             
             if(options.vertical && options.vertical !== 'undefined'){
                 view.slider.addClass('vertical').css("width", 5).css("height", options.width);
+                view.popup.addClass('vertical');
                 var direction = "top";
+                var popupAlign = 17;
             }else{
                 var direction = "left";
+                var popupAlign = 20;
             }
             
             
@@ -159,9 +163,11 @@
             
             view.handler.on('mousedown', function() {
                 $(document).on('mousemove', function () {
+                    if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
+                    }
                     view.handler.css(direction, model.handlerPositionToSlider -10);
-                    view.popup.css(direction, model.handlerPositionToSlider -20);
+                    view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
                     view.popup.text(model.handlerPositionWithStep);
                 });
                 $(document).mouseup(function(){
@@ -178,18 +184,20 @@
 /////// VIEW ////////
         SLIDER.View = function (rootObject) {
             var that = this;
-            
+            that.vertical;
             this.viewChangedSubject = SLIDER.makeObservableSubject();
             // $container.append('<div class="slider"><div class="popup"></div><div class="slider-handler"></div></div><input type="text" class="handlerPosition">');
             that.slider = $('<div class="slider"></div>').appendTo(rootObject);
             that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
-            that.verticalCheck = function(){
-                if (that.vertical && that.vertical !== 'undefined'){
-                    that.popup.addClass('vertical');
-                }
-            };
-            that.verticalCheck();
+            
+                this.verticalCheck = function(vertical){
+                    if (vertical){
+                        that.popup.addClass('vertical');
+                    }
+                };
+                that.verticalCheck(that.vertical);
+            
             
         };
 
@@ -211,7 +219,8 @@
             maxValue: 100,
             step: 1,
             startPosition: 0,
-            vertical: false
+            vertical: false,
+            popup: false
         };
     
        
@@ -226,6 +235,7 @@ $(document).ready(function() {
             maxValue: 500,
             step: 50,
             startPosition:300,
-            vertical: true
+            vertical: true,
+            popup: true
         });
 });

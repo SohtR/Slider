@@ -87,7 +87,7 @@ html,body {margin: 0px; padding: 0px; }
     background: #e75735;
     position: absolute;
     top: -45px;
-    left: -20px;
+    left: 25px;
     font-size: 16px;
     font-weight: bold;
     text-align: center;
@@ -103,9 +103,9 @@ html,body {margin: 0px; padding: 0px; }
 .popup.vertical::after{
         content: ''; 
         position: absolute; /* Абсолютное позиционирование */
-        left: 12px; left: -16px; /* Положение треугольника */
+        bottom: 6px; left: -16px; /* Положение треугольника */
         border: 8px solid transparent; /* Прозрачные границы */
-        border-top: 8px solid #e75735; /* Добавляем треугольник */
+        border-right: 8px solid #e75735; /* Добавляем треугольник */
 }
 
 input[type="text"] {
