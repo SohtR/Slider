@@ -55,26 +55,20 @@
                 var posX = event.pageX;
                 var posY = event.pageY;
                 that.mousePosition = {x: posX, y: posY};
-                // console.log(that.mousePosition);
-                
             
                 that.newMousePosition = that.getMousePositionRelativeToSlider();
-                // console.log( that.newMousePosition);
                 if(that.vertical && that.vertical !== 'undefined'){
                     that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.y, that.sliderWidth);
                 }else{
                     that.percentOfSlider = that.getPercentOfSlider(that.newMousePosition.x, that.sliderWidth);
                 }
-                // console.log(`that.percentOfSlider:${that.percentOfSlider}`);
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
-                // console.log(`that.handlerPositionWithRange:${that.handlerPositionWithRange}`);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
-                // console.log(`that.handlerPositionWithStep:${that.handlerPositionWithStep}`);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
-                // console.log(that.handlerPositionToSlider);
 
                 // that.modelChangedSubject.notifyObservers();
             });
+
             this.getMousePosition = function(){
                 return that.mousePosition;
             };
@@ -121,11 +115,13 @@
         SLIDER.Controller = function(model, view, opts){
             var options = opts;
             model.slider = view.slider;
-            view.vertical = options.vertical;
+            view.setVertical(options.vertical);
+            view.setWidth(options.width);
+            view.setRange(options.range);
             model.vertical = options.vertical;
+            view.setInput(options.input);
             
-            
-            if (typeof(options.width) != 'undefined'){
+            if (typeof(options.width) != 'undefined' && !options.vertical){
                 view.slider.css('width',(options.width+'px'));
             }
 
@@ -134,39 +130,57 @@
             model.step = options.step;
             model.sliderWidth = options.width;
             model.startPosition = options.startPosition;
-            
+            model.sliderLeft = view.slider.offset().left;
+            model.sliderTop = view.slider.offset().top;
+
             if(options.vertical && options.vertical !== 'undefined'){
-                view.slider.addClass('vertical').css("width", 5).css("height", options.width);
-                view.popup.addClass('vertical');
-                var direction = "top";
+                var direction = 'top';
                 var popupAlign = 17;
             }else{
-                var direction = "left";
+                var direction = 'left';
                 var popupAlign = 20;
             }
-            
-            
-            var newStartPosition = model.getHandlerPositionWithStep(options.startPosition, options.step);
+              
+            var newStartPosition = model.getHandlerPositionWithStep(options.startPosition, options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPosition = model.getHandlerPositionToSlider(newStartPosition, options.minValue, options.maxValue, options.width);
             view.handler.css(direction, newStartPosition - 10);
             
 
-            model.sliderLeft = view.slider.offset().left;
-            model.sliderTop = view.slider.offset().top;
-
-            view.slider.mousemove(function(){
+            view.slider.mousemove(function(){                                                       /////// Передвижение ползунка кликом на слайдере
                 view.slider.click(function(){
-                        view.handler.animate({direction: model.handlerPositionToSlider - 10 + "px"}, 500);
-                        view.handler.clearQueue();
+                        if(!options.range){
+                            var object = {};
+                            object[direction] = `${model.handlerPositionToSlider - 10}px`;
+                            view.handler.animate(object, 500);
+                            view.input.val(model.handlerPositionWithStep);
+                            view.handler.clearQueue();
+                        }
                 });
             });
             
-            view.handler.on('mousedown', function() {
+            view.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
                 $(document).on('mousemove', function () {
                     if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
                     }
                     view.handler.css(direction, model.handlerPositionToSlider -10);
+                    view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                    view.popup.text(model.handlerPositionWithStep);
+                    view.input.val(model.handlerPositionWithStep);
+                });
+                $(document).mouseup(function(){
+                    $(document).off('mousemove');
+                    $(document).off('mouseup');
+                    view.popup.hide();
+                });
+            });                                                                                     /////////
+
+            view.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
+                $(document).on('mousemove', function () {
+                    if(options.popup && options.popup !== 'undefined'){
+                    view.popup.show();
+                    }
+                    view.handlerSecond.css(direction, model.handlerPositionToSlider -10);
                     view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
                     view.popup.text(model.handlerPositionWithStep);
                 });
@@ -175,28 +189,64 @@
                     $(document).off('mouseup');
                     view.popup.hide();
                 });
-            });
-        
+            });                                                                                     /////////
+            
+            view.input.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                var newPosFromInput = ((view.input.val() - options.minValue) / (options.maxValue - options.minValue));
+                newPosFromInput *= options.width;
+                var object = {};
+                object[direction] = `${newPosFromInput - 10}px`;
+                view.handler.animate(object, 500);
+            })
             
             
         };
 
-/////// VIEW ////////
+/////// VIEW //////////////////////////////////////
+        
         SLIDER.View = function (rootObject) {
             var that = this;
-            that.vertical;
             this.viewChangedSubject = SLIDER.makeObservableSubject();
-            // $container.append('<div class="slider"><div class="popup"></div><div class="slider-handler"></div></div><input type="text" class="handlerPosition">');
             that.slider = $('<div class="slider"></div>').appendTo(rootObject);
-            that.handler = $('<div class="slider-handler"></div>').appendTo(that.slider);
+            that.handler = $('<div class="sliderHandler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
+            that.handlerSecond = $('<div class="sliderHandlerSecond"></div>').appendTo(that.slider).hide();
+            that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
             
-                this.verticalCheck = function(vertical){
-                    if (vertical){
-                        that.popup.addClass('vertical');
-                    }
-                };
-                that.verticalCheck(that.vertical);
+            this.setRange = function(value){
+                that.range = value;
+                if (that.range && that.range !== 'undefined'){
+                    that.handlerSecond.show();
+                } 
+            };
+            
+            this.setInput = function(value){
+                that.inputShowing = value;
+                if (that.inputShowing && that.inputShowing !== 'undefined'){
+                    that.input.show();
+                } 
+            }
+            
+            this.setWidth = function(value){
+                that.width = value;
+                if(that.vertical && that.vertical !== 'undefined'){
+                    that.slider.addClass('vertical').css("height", that.width);
+                }
+            };
+
+            this.getWidth = function(){
+                return that.width;
+            };
+            
+            this.setVertical = function(value){
+                that.vertical = value;
+                if(that.vertical && that.vertical !== 'undefined'){
+                    that.slider.addClass('vertical').css("width", 5).css("height", that.getWidth());
+                    that.popup.addClass('vertical');
+                }
+            }
+            
+            
             
             
         };
@@ -220,14 +270,22 @@
             step: 1,
             startPosition: 0,
             vertical: false,
-            popup: false
+            popup: false,
+            range: false,
+            input: false
         };
     
        
 })(jQuery);
 
 $(document).ready(function() {
-    $(".1").MySlider();
+    $(".1").MySlider(
+        {
+            range: true,
+            startPosition:50,
+            popup: true,
+            input: true
+        });
     $(".2").MySlider(
         {
             width: 200,
@@ -236,6 +294,7 @@ $(document).ready(function() {
             step: 50,
             startPosition:300,
             vertical: true,
-            popup: true
+            popup: true,
+            input: true
         });
 });

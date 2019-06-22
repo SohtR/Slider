@@ -29,7 +29,8 @@ html,body {margin: 0px; padding: 0px; }
     margin: 0px 0 40px 0;
 }
 
-.slider-handler{
+.sliderHandler,
+.sliderHandlerSecond{
     height: 20px;
     width: 20px;
     border-radius: 50%;
