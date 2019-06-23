@@ -65,6 +65,8 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
+                
+                
 
                 // that.modelChangedSubject.notifyObservers();
             });
@@ -99,10 +101,10 @@
                 return (Math.round(handlerPosition/step))*step;
             };
             
-            // this.handlerPositionToSliderChangedSubject = SLIDER.makeObservableSubject();
+            this.handlerPositionToSliderChangedSubject = SLIDER.makeObservableSubject();
             this.getHandlerPositionToSlider = function(HandlerPositionWithStep, minValue, maxValue, sliderWidth){
                 that.handlerPositionToSlider = sliderWidth*((HandlerPositionWithStep - minValue) / (maxValue - minValue)); 
-                // that.handlerPositionToSliderChangedSubject.notifyObservers();
+                that.handlerPositionToSliderChangedSubject.notifyObservers();
                 return  that.handlerPositionToSlider;
             };
             
@@ -141,11 +143,19 @@
                 var popupAlign = 20;
             }
               
-            var newStartPosition = model.getHandlerPositionWithStep(options.startPosition, options.step);                                   /////// Рассчет стартовой позиции ползунка
-            newStartPosition = model.getHandlerPositionToSlider(newStartPosition, options.minValue, options.maxValue, options.width);
-            view.handler.css(direction, newStartPosition - 10);
+            var newStartPositionF = model.getHandlerPositionWithStep(options.startPosition[0], options.step);                                   /////// Рассчет стартовой позиции ползунка
+            newStartPositionF = model.getHandlerPositionToSlider(newStartPositionF, options.minValue, options.maxValue, options.width);
+            view.handler.css(direction, newStartPositionF );
+
+            var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции ползунка
+            newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
+            view.handlerSecond.css(direction, newStartPositionS);
             
 
+            var firstHandler = model.handlerPositionToSlider,
+                secondHandler = model.handlerPositionToSlider;
+            var secondInput = options.startPosition[1];
+            var firstInput = options.startPosition[0];
             view.slider.mousemove(function(){                                                       /////// Передвижение ползунка кликом на слайдере
                 view.slider.click(function(){
                         if(!options.range){
@@ -163,10 +173,23 @@
                     if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
                     }
-                    view.handler.css(direction, model.handlerPositionToSlider -10);
-                    view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
-                    view.popup.text(model.handlerPositionWithStep);
-                    view.input.val(model.handlerPositionWithStep);
+                    firstHandler = model.handlerPositionToSlider;
+                    firstInput = model.handlerPositionWithStep;
+                    if(options.range){
+                        if(firstHandler < secondHandler-options.step){
+                            view.handler.css(direction, model.handlerPositionToSlider -10);
+                            view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                            view.popup.text(model.handlerPositionWithStep);
+                            view.input.val(`${firstInput} - ${secondInput}`);
+                        }  
+                    }else{
+                        view.handler.css(direction, model.handlerPositionToSlider -10);
+                        view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                        view.popup.text(model.handlerPositionWithStep);
+                        view.input.val(model.handlerPositionWithStep);
+                    }
+                        
+                    
                 });
                 $(document).mouseup(function(){
                     $(document).off('mousemove');
@@ -180,9 +203,17 @@
                     if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
                     }
-                    view.handlerSecond.css(direction, model.handlerPositionToSlider -10);
-                    view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
-                    view.popup.text(model.handlerPositionWithStep);
+                    secondHandler = model.handlerPositionToSlider;
+                    secondInput = model.handlerPositionWithStep;
+                    if(secondHandler > firstHandler+options.step){
+                        view.handlerSecond.css(direction, model.handlerPositionToSlider -10);
+                        view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                        view.popup.text(model.handlerPositionWithStep);
+                        view.input.val(`${firstInput} - ${secondInput}`);
+                    }
+                    
+                     
+                    
                 });
                 $(document).mouseup(function(){
                     $(document).off('mousemove');
@@ -282,9 +313,10 @@ $(document).ready(function() {
     $(".1").MySlider(
         {
             range: true,
-            startPosition:50,
+            startPosition: [0, 50],
             popup: true,
-            input: true
+            input: true,
+            step: 5
         });
     $(".2").MySlider(
         {
