@@ -65,6 +65,11 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
+                // console.log(`that.newMousePosition ${that.newMousePosition}`);
+                // console.log(`that.percentOfSlider ${that.percentOfSlider}`);
+                // console.log(`that.handlerPositionWithRange ${that.handlerPositionWithRange}`);
+                // console.log(`that.handlerPositionWithStep ${that.handlerPositionWithStep}`);
+                // console.log(`that.handlerPositionToSlider ${that.handlerPositionToSlider}`);
                 
                 
 
@@ -114,18 +119,16 @@
         
 //////// CONTROLLER //////////////////////////////////////////
 
-        SLIDER.Controller = function(model, view, opts){
+        SLIDER.Controller = function(model, view, opts, config){
+            
             var options = opts;
-            model.slider = view.slider;
+            
+            
             view.setVertical(options.vertical);
-            view.setWidth(options.width);
             view.setRange(options.range);
-            model.vertical = options.vertical;
+            view.setWidth(options.width);
             view.setInput(options.input);
             
-            if (typeof(options.width) != 'undefined' && !options.vertical){
-                view.slider.css('width',(options.width+'px'));
-            }
 
             model.minValue = options.minValue;                  //// Передача опций в модель
             model.maxValue = options.maxValue;
@@ -134,6 +137,7 @@
             model.startPosition = options.startPosition;
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
+            model.vertical = options.vertical;
 
             if(options.vertical && options.vertical !== 'undefined'){
                 var direction = 'top';
@@ -153,9 +157,10 @@
             
 
             var firstHandler = model.handlerPositionToSlider,
-                secondHandler = model.handlerPositionToSlider;
-            var secondInput = options.startPosition[1];
-            var firstInput = options.startPosition[0];
+                secondHandler = model.handlerPositionToSlider,
+                secondInput = options.startPosition[1],
+                firstInput = options.startPosition[0];
+            
             view.slider.mousemove(function(){                                                       /////// Передвижение ползунка кликом на слайдере
                 view.slider.click(function(){
                         if(!options.range){
@@ -173,6 +178,12 @@
                     if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
                     }
+                    if(model.handlerPositionWithStep < options.minValue ){
+                        model.handlerPositionWithStep = options.minValue;
+                        model.handlerPositionToSlider = ((model.handlerPositionWithStep - options.minValue) / (options.maxValue - options.minValue));
+                        model.handlerPositionToSlider *= options.width;
+                    }
+                    
                     firstHandler = model.handlerPositionToSlider;
                     firstInput = model.handlerPositionWithStep;
                     if(options.range){
@@ -203,6 +214,11 @@
                     if(options.popup && options.popup !== 'undefined'){
                     view.popup.show();
                     }
+                    if(model.handlerPositionWithStep > options.maxValue){
+                        model.handlerPositionWithStep = options.maxValue;
+                        model.handlerPositionToSlider = ((model.handlerPositionWithStep - options.minValue) / (options.maxValue - options.minValue));
+                        model.handlerPositionToSlider *= options.width;
+                    }
                     secondHandler = model.handlerPositionToSlider;
                     secondInput = model.handlerPositionWithStep;
                     if(secondHandler > firstHandler+options.step){
@@ -229,6 +245,17 @@
                 object[direction] = `${newPosFromInput - 10}px`;
                 view.handler.animate(object, 500);
             })
+            config.configChangedSubject.addObserver(function () {
+                view.setWidth(config.configWidth.val());
+                model.sliderWidth = options.width;
+                // model.step = options.step;
+                // model.minValue = options.minValue;                  
+                // model.maxValue = options.maxValue;
+                // view.setRange(config.newRange);
+                // view.setInput(config.newInput);
+                // view.setVertical(config.newVertical);
+                // model.vertical = options.vertical;
+            });
             
             
         };
@@ -238,7 +265,7 @@
         SLIDER.View = function (rootObject) {
             var that = this;
             this.viewChangedSubject = SLIDER.makeObservableSubject();
-            that.slider = $('<div class="slider"></div>').appendTo(rootObject);
+            that.slider = $('<div class="slider"></div>').prependTo(rootObject);
             that.handler = $('<div class="sliderHandler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
             that.handlerSecond = $('<div class="sliderHandlerSecond"></div>').appendTo(that.slider).hide();
@@ -248,6 +275,8 @@
                 that.range = value;
                 if (that.range && that.range !== 'undefined'){
                     that.handlerSecond.show();
+                } else{
+                    that.handlerSecond.hide();
                 } 
             };
             
@@ -255,13 +284,19 @@
                 that.inputShowing = value;
                 if (that.inputShowing && that.inputShowing !== 'undefined'){
                     that.input.show();
-                } 
+                } else{
+                    that.input.hide();
+                }
             }
             
             this.setWidth = function(value){
                 that.width = value;
                 if(that.vertical && that.vertical !== 'undefined'){
                     that.slider.addClass('vertical').css("height", that.width);
+                    that.popup.addClass('vertical');
+                } else{
+                    that.slider.removeClass('vertical').css("height", 5);
+                    that.popup.removeClass('vertical');
                 }
             };
 
@@ -271,16 +306,83 @@
             
             this.setVertical = function(value){
                 that.vertical = value;
-                if(that.vertical && that.vertical !== 'undefined'){
-                    that.slider.addClass('vertical').css("width", 5).css("height", that.getWidth());
-                    that.popup.addClass('vertical');
-                }
+          
             }
             
             
             
             
         };
+        
+
+        SLIDER.Config = function(rootObject, opts){
+            var options = opts;
+            that = this;
+            this.configChangedSubject = SLIDER.makeObservableSubject();
+
+            that.configBody = $('<div class="config"></div>').appendTo(rootObject);
+            
+            $configWidth =  $('<label>Width</label>').appendTo(that.configBody);
+            that.configWidth = $('<input type="text" name="width">').appendTo(that.configBody);
+            that.configWidth.val(options.width);
+            that.configWidth.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.width =  that.configWidth.val(); 
+                that.configChangedSubject.notifyObservers();
+            });
+            
+            $configStep =  $('<label>Step</label>').appendTo(that.configBody);
+            that.configStep = $('<input type="text" name="step">').appendTo(that.configBody);
+            that.configStep.val(options.step);
+            that.configStep.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.step =  that.configStep.val(); 
+                that.configChangedSubject.notifyObservers();
+            });
+
+            // $configMinValue =  $('<label>MinValue</label>').appendTo(that.configBody);
+            // that.configMinValue = $('<input type="text" name="MinValue">').appendTo(that.configBody);
+            // that.configMinValue.val(options.minValue);
+            // that.configMinValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            //     options.minValue =  that.configMinValue.val(); 
+            //     that.configChangedSubject.notifyObservers();
+            // });
+
+            $configMaxValue =  $('<label>MaxValue</label>').appendTo(that.configBody);
+            that.configMaxValue = $('<input type="text" name="MaxValue">').appendTo(that.configBody);
+            that.configMaxValue.val(options.maxValue);
+            that.configMaxValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.maxValue =  that.configMaxValue.val(); 
+                that.configChangedSubject.notifyObservers();
+            });
+
+            that.configPopup = $('<button name="popup">Popup</button>').appendTo(that.configBody);
+            that.configPopup.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.popup = !options.popup;
+                that.configChangedSubject.notifyObservers();
+            });
+
+            that.configRange = $('<button name="range">Range</button>').appendTo(that.configBody);
+            that.configRange.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.range = !options.range;
+                that.newRange = options.range;
+                that.configChangedSubject.notifyObservers();
+            });
+
+            that.configInput = $('<button name="input">Input</button>').appendTo(that.configBody);
+            that.configInput.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.input = !options.input;
+                that.newInput = options.input;
+                that.configChangedSubject.notifyObservers();
+            });
+
+            that.configVertical = $('<button name="vertical">Vertical</button>').appendTo(that.configBody);
+            that.configVertical.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.vertical = !options.vertical;
+                that.newVertical = options.vertical;
+                that.configChangedSubject.notifyObservers();
+            });
+            
+            
+        }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -289,8 +391,9 @@
 
             return this.each(function () {
             var view = new SLIDER.View($(this));
+            var config = new SLIDER.Config($(this), opts);
             var model = new SLIDER.Model();
-            var controller = new SLIDER.Controller(model, view, opts);
+            var controller = new SLIDER.Controller(model, view, opts, config);
             });
         }
 
@@ -313,10 +416,12 @@ $(document).ready(function() {
     $(".1").MySlider(
         {
             range: true,
-            startPosition: [0, 50],
+            startPosition: [0, 330],
             popup: true,
-            input: true,
-            step: 5
+            input: false,
+            step: 30,
+            minValue: 0,
+            maxValue: 330
         });
     $(".2").MySlider(
         {
@@ -328,5 +433,15 @@ $(document).ready(function() {
             vertical: true,
             popup: true,
             input: true
+        });
+    $(".3").MySlider(
+        {
+            range: true,
+            startPosition: [0, 330],
+            popup: true,
+            input: false,
+            step: 30,
+            minValue: 0,
+            maxValue: 330
         });
 });

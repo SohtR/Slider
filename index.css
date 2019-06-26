@@ -1,6 +1,7 @@
 html,body {margin: 0px; padding: 0px; }
 .container{
     margin: 50px;
+    display: flex;
 }
 
 .slider{
@@ -116,3 +117,16 @@ input[type="text"] {
     -webkit-user-select: none;
     user-select: none;
 }
+
+.config{
+    margin: 0 0 0 100px;
+    display: flex;
+    flex-direction: column;
+}
+label{
+    margin: 0 0 0 20px;
+}
+/* button{
+    width: 30px;
+    height: 30px;
+} */
