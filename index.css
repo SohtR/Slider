@@ -126,6 +126,19 @@ input[type="text"] {
 label{
     margin: 0 0 0 20px;
 }
+.scale{
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 0 -4px;
+    width: 105%;
+}
+.scaleVertical{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: -52px 0 0 22px;
+    height: 110%;
+}
 /* button{
     width: 30px;
     height: 30px;

@@ -128,6 +128,7 @@
             view.setRange(options.range);
             view.setWidth(options.width);
             view.setInput(options.input);
+            view.setScale(options.minValue, options.maxValue);
             
 
             model.minValue = options.minValue;                  //// Передача опций в модель
@@ -252,7 +253,7 @@
 
             config.configVerticalChangedSubject.addObserver(function () {
                 view.setVertical(config.newVertical);
-                model.vertical = options.vertical;
+                model.vertical = config.newVertical;
             });
 
             config.configPopupChangedSubject.addObserver(function () {
@@ -301,7 +302,25 @@
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
             that.handlerSecond = $('<div class="sliderHandlerSecond"></div>').appendTo(that.slider).hide();
             that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
-            
+            that.scale = $('<div class="scale"></div>').appendTo(that.slider);
+            that.scaleStart = $('<span class="scaleStart"></span>').appendTo(that.scale);
+            that.scaleQuarter = $('<span class="scaleQuarter"></span>').appendTo(that.scale);
+            that.scaleHalf = $('<span class="scaleHalf"></span>').appendTo(that.scale);
+            that.scaleThreeQuarter = $('<span class="scaleThreeQuarter"></span>').appendTo(that.scale);
+            that.scaleEnd = $('<span class="scaleEnd"></span>').appendTo(that.scale);
+
+            this.setScale = function(minValue, maxValue){
+                var quarter = Math.round((maxValue-minValue)/4)+minValue,
+                    threeQuarter = (quarter*3)+minValue,
+                    half = Math.round((maxValue-minValue)/2)+minValue;
+                that.scaleStart.text(minValue);
+                that.scaleEnd.text(maxValue);
+                that.scaleQuarter.text(quarter);
+                that.scaleHalf.text(half);
+                that.scaleThreeQuarter.text(threeQuarter);
+
+            }
+
             this.setRange = function(value){
                 that.range = value;
                 if (that.range && that.range !== 'undefined'){
@@ -325,6 +344,7 @@
                
                 if(that.vertical && that.vertical !== 'undefined'){
                     that.slider.addClass('vertical').css("height", that.width);
+                    that.scale.addClass('scaleVertical');
                     that.slider.css("width", 5);
                     that.popup.addClass('vertical');
                 } else{
@@ -365,7 +385,7 @@
             that.configWidth.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 
                 that.newWidth = options.width; 
-                console.log(that.newWidth);
+                
                 
                 that.configWidthChangedSubject.notifyObservers();
             });
@@ -449,7 +469,7 @@
             minValue: 0,
             maxValue: 100,
             step: 1,
-            startPosition: 0,
+            startPosition: [0, 100],
             vertical: false,
             popup: false,
             range: false,
@@ -476,10 +496,11 @@ $(document).ready(function() {
             minValue: 100,
             maxValue: 500,
             step: 50,
-            startPosition:300,
+            startPosition:[300, 400],
             vertical: true,
             popup: true,
-            input: true
+            input: true,
+            range:true
         });
     $(".3").MySlider(
         {
