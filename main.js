@@ -245,16 +245,47 @@
                 object[direction] = `${newPosFromInput - 10}px`;
                 view.handler.animate(object, 500);
             })
-            config.configChangedSubject.addObserver(function () {
+
+            config.configRangeChangedSubject.addObserver(function () {
+                view.setRange(config.newRange);
+            });
+
+            config.configVerticalChangedSubject.addObserver(function () {
+                view.setVertical(config.newVertical);
+                model.vertical = options.vertical;
+            });
+
+            config.configPopupChangedSubject.addObserver(function () {
+
+            });
+            
+            config.configStepChangedSubject.addObserver(function () {
+                model.step = options.step;
+            });
+
+            config.configInputChangedSubject.addObserver(function () {
+                view.setInput(config.newInput);
+            });
+
+            config.configWidthChangedSubject.addObserver(function () {
                 view.setWidth(config.configWidth.val());
                 model.sliderWidth = options.width;
-                // model.step = options.step;
-                // model.minValue = options.minValue;                  
-                // model.maxValue = options.maxValue;
-                // view.setRange(config.newRange);
-                // view.setInput(config.newInput);
-                // view.setVertical(config.newVertical);
-                // model.vertical = options.vertical;
+            });
+
+            config.configMaxValueChangedSubject.addObserver(function () {
+                model.maxValue = options.maxValue;
+            });
+
+            // config.configMinValueChangedSubject.addObserver(function () {
+            //     model.minValue = options.minValue;    
+            // });
+
+            config.configChangedSubject.addObserver(function () {
+                
+                
+                              
+                
+                
             });
             
             
@@ -291,11 +322,14 @@
             
             this.setWidth = function(value){
                 that.width = value;
+               
                 if(that.vertical && that.vertical !== 'undefined'){
                     that.slider.addClass('vertical').css("height", that.width);
+                    that.slider.css("width", 5);
                     that.popup.addClass('vertical');
                 } else{
                     that.slider.removeClass('vertical').css("height", 5);
+                    that.slider.css("width", that.width);
                     that.popup.removeClass('vertical');
                 }
             };
@@ -317,68 +351,81 @@
 
         SLIDER.Config = function(rootObject, opts){
             var options = opts;
-            that = this;
+            var that = this;
             this.configChangedSubject = SLIDER.makeObservableSubject();
 
             that.configBody = $('<div class="config"></div>').appendTo(rootObject);
             
+
+            this.configWidthChangedSubject = SLIDER.makeObservableSubject();
             $configWidth =  $('<label>Width</label>').appendTo(that.configBody);
             that.configWidth = $('<input type="text" name="width">').appendTo(that.configBody);
             that.configWidth.val(options.width);
+            
             that.configWidth.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
-                options.width =  that.configWidth.val(); 
-                that.configChangedSubject.notifyObservers();
+                
+                that.newWidth = options.width; 
+                console.log(that.newWidth);
+                
+                that.configWidthChangedSubject.notifyObservers();
             });
             
+            this.configStepChangedSubject = SLIDER.makeObservableSubject();
             $configStep =  $('<label>Step</label>').appendTo(that.configBody);
             that.configStep = $('<input type="text" name="step">').appendTo(that.configBody);
             that.configStep.val(options.step);
             that.configStep.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.step =  that.configStep.val(); 
-                that.configChangedSubject.notifyObservers();
+                that.configStepChangedSubject.notifyObservers();
             });
 
+            // this.configMinValueChangedSubject = SLIDER.makeObservableSubject();
             // $configMinValue =  $('<label>MinValue</label>').appendTo(that.configBody);
             // that.configMinValue = $('<input type="text" name="MinValue">').appendTo(that.configBody);
             // that.configMinValue.val(options.minValue);
             // that.configMinValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
             //     options.minValue =  that.configMinValue.val(); 
-            //     that.configChangedSubject.notifyObservers();
+            //     that.configMinValueChangedSubject.notifyObservers();
             // });
 
+            this.configMaxValueChangedSubject = SLIDER.makeObservableSubject();
             $configMaxValue =  $('<label>MaxValue</label>').appendTo(that.configBody);
             that.configMaxValue = $('<input type="text" name="MaxValue">').appendTo(that.configBody);
             that.configMaxValue.val(options.maxValue);
             that.configMaxValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.maxValue =  that.configMaxValue.val(); 
-                that.configChangedSubject.notifyObservers();
+                that.configMaxValueChangedSubject.notifyObservers();
             });
 
+            this.configPopupChangedSubject = SLIDER.makeObservableSubject();
             that.configPopup = $('<button name="popup">Popup</button>').appendTo(that.configBody);
             that.configPopup.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.popup = !options.popup;
-                that.configChangedSubject.notifyObservers();
+                that.configPopupChangedSubject.notifyObservers();
             });
 
+            this.configRangeChangedSubject = SLIDER.makeObservableSubject();
             that.configRange = $('<button name="range">Range</button>').appendTo(that.configBody);
             that.configRange.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.range = !options.range;
                 that.newRange = options.range;
-                that.configChangedSubject.notifyObservers();
+                that.configRangeChangedSubject.notifyObservers();
             });
 
+            this.configInputChangedSubject = SLIDER.makeObservableSubject();
             that.configInput = $('<button name="input">Input</button>').appendTo(that.configBody);
             that.configInput.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.input = !options.input;
                 that.newInput = options.input;
-                that.configChangedSubject.notifyObservers();
+                that.configInputChangedSubject.notifyObservers();
             });
 
+            this.configVerticalChangedSubject = SLIDER.makeObservableSubject();
             that.configVertical = $('<button name="vertical">Vertical</button>').appendTo(that.configBody);
             that.configVertical.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 options.vertical = !options.vertical;
                 that.newVertical = options.vertical;
-                that.configChangedSubject.notifyObservers();
+                that.configVerticalChangedSubject.notifyObservers();
             });
             
             
