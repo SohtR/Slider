@@ -48,6 +48,9 @@
             this.mousePosition = {};
             // this.modelChangedSubject = SLIDER.makeObservableSubject();
             
+            this.setMinValue = function(value){
+                that.minValue = value;
+            }
             
         
             $('html').mousemove(function (event) {
@@ -129,9 +132,11 @@
             view.setWidth(options.width);
             view.setInput(options.input);
             view.setScale(options.minValue, options.maxValue);
+            view.showScale(options.scale);
             
+            model.setMinValue(options.minValue);
 
-            model.minValue = options.minValue;                  //// Передача опций в модель
+            // model.minValue = options.minValue;                  //// Передача опций в модель
             model.maxValue = options.maxValue;
             model.step = options.step;
             model.sliderWidth = options.width;
@@ -270,23 +275,24 @@
 
             config.configWidthChangedSubject.addObserver(function () {
                 view.setWidth(config.configWidth.val());
-                model.sliderWidth = options.width;
+                model.sliderWidth = config.configWidth.val();
             });
 
             config.configMaxValueChangedSubject.addObserver(function () {
                 model.maxValue = options.maxValue;
+                view.setScale(options.minValue, options.maxValue);
             });
 
             // config.configMinValueChangedSubject.addObserver(function () {
-            //     model.minValue = options.minValue;    
+            //     model.setMinValue(options.minValue);  
+            //     view.setScale(options.minValue, options.maxValue);  
             // });
 
             config.configChangedSubject.addObserver(function () {
-                
-                
-                              
-                
-                
+            });
+
+            config.configScaleChangedSubject.addObserver(function () {
+                view.showScale(options.scale);
             });
             
             
@@ -318,7 +324,15 @@
                 that.scaleQuarter.text(quarter);
                 that.scaleHalf.text(half);
                 that.scaleThreeQuarter.text(threeQuarter);
+            };
 
+            this.showScale = function(value){
+                that.scaleShow = value;
+                if(that.scaleShow && that.scaleShow!== 'undefined'){
+                    that.scale.show();
+                } else{
+                    that.scale.hide();
+                }
             }
 
             this.setRange = function(value){
@@ -448,6 +462,15 @@
                 that.configVerticalChangedSubject.notifyObservers();
             });
             
+            this.configScaleChangedSubject = SLIDER.makeObservableSubject();
+            that.configScale = $('<button name="scale">Scale</button>').appendTo(that.configBody);
+            that.configScale.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.scale = !options.scale;
+                that.newScale = options.scale;
+                that.configScaleChangedSubject.notifyObservers();
+            });
+
+            
             
         }
 
@@ -473,7 +496,8 @@
             vertical: false,
             popup: false,
             range: false,
-            input: false
+            input: false,
+            scale: true
         };
     
        
