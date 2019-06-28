@@ -57,9 +57,11 @@
                 if(isVertical && isVertical !== 'undefined'){
                     that.direction = 'top';
                     that.popupAlign = 17;
+                    that.directionProgress = 'to bottom';
                 }else{
                     that.direction = 'left';
                     that.popupAlign = 20;
+                    that.directionProgress = 'to right';
                 }
             }
             
@@ -206,7 +208,7 @@
                         if(firstHandler < secondHandler){
                             
                             view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                            view.slider.css('background', `linear-gradient(to right, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
                             view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                             view.popup.text(model.handlerPositionWithStep);
                             view.input.val(`${firstInput} - ${secondInput}`);
@@ -214,7 +216,7 @@
                     }else{
                         firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                         view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                        view.slider.css('background', `linear-gradient(to right, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
+                        view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
                         view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(model.handlerPositionWithStep);
@@ -245,7 +247,7 @@
                     secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                     if(secondHandler > firstHandler){
                         view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
-                        view.slider.css('background', `linear-gradient(to right, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                        view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
                         view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(`${firstInput} - ${secondInput}`);
