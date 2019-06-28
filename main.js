@@ -445,8 +445,10 @@
             var options = opts;
             var that = this;
             this.configChangedSubject = SLIDER.makeObservableSubject();
-
-            that.configBody = $('<div class="config"></div>').appendTo(rootObject);
+            if(options.config){
+                that.configBody = $('<div class="config"></div>').appendTo(rootObject);
+            }
+            
             
 
             this.configWidthChangedSubject = SLIDER.makeObservableSubject();
@@ -547,13 +549,9 @@
 
             return this.each(function () {
             var view = new SLIDER.View($(this));
-            if(opts.config){
-                var config = new SLIDER.Config($(this), opts); 
-            }
+            var config = new SLIDER.Config($(this), opts);
             var model = new SLIDER.Model();
             var controller = new SLIDER.Controller(model, view, opts, config);
-           
-            
             });
         }
 
