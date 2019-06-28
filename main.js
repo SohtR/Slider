@@ -138,7 +138,7 @@
             view.setInput(options.input);
             view.setScale(options.minValue, options.maxValue, options.step);
             view.showScale(options.scale);
-            
+            view.getWidth(options.width);
             model.setMinValue(options.minValue);
 
             // model.minValue = options.minValue;                  //// Передача опций в модель
@@ -329,6 +329,10 @@
             config.configScaleChangedSubject.addObserver(function () {
                 view.showScale(options.scale);
             });
+
+            config.configProgressChangedSubject.addObserver(function () {
+                view.slider.css('background', '#e5e5e5');
+            });
             
             
         };
@@ -405,10 +409,13 @@
                 }
             };
 
-            this.getWidth = function(){
-                return that.width;
+            this.getWidth = function(value){
+                return that.width = value;
             };
             
+            console.log(that.width);
+            
+
             this.setVertical = function(value){
                 that.vertical = value;
                 if(that.vertical && that.vertical !== 'undefined'){
@@ -521,6 +528,14 @@
                 that.configScaleChangedSubject.notifyObservers();
             });
 
+            this.configProgressChangedSubject = SLIDER.makeObservableSubject();
+            that.configScale = $('<button name="progress">Progress Bar</button>').appendTo(that.configBody);
+            that.configScale.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.progress = !options.progress;
+                that.newProgress = options.progress;
+                that.configProgressChangedSubject.notifyObservers();
+            });
+
             
             
         }
@@ -532,9 +547,13 @@
 
             return this.each(function () {
             var view = new SLIDER.View($(this));
-            var config = new SLIDER.Config($(this), opts);
+            if(opts.config){
+                var config = new SLIDER.Config($(this), opts); 
+            }
             var model = new SLIDER.Model();
             var controller = new SLIDER.Controller(model, view, opts, config);
+           
+            
             });
         }
 
@@ -549,7 +568,8 @@
             range: false,
             input: false,
             scale: true,
-            progress: true
+            progress: true,
+            config: false
         };
     
        
@@ -565,7 +585,8 @@ $(document).ready(function() {
             step: 30,
             minValue: 0,
             maxValue: 330,
-            progress: true
+            progress: true,
+            config: true
         });
     $(".2").MySlider(
         {
@@ -578,7 +599,8 @@ $(document).ready(function() {
             popup: true,
             input: true,
             range:true,
-            progress: true
+            progress: true,
+            config: true
         });
     $(".3").MySlider(
         {
