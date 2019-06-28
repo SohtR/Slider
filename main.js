@@ -51,6 +51,17 @@
             this.setMinValue = function(value){
                 that.minValue = value;
             }
+
+            this.setDirection = function(vertical){
+                var isVertical = vertical;
+                if(isVertical && isVertical !== 'undefined'){
+                    that.direction = 'top';
+                    that.popupAlign = 17;
+                }else{
+                    that.direction = 'left';
+                    that.popupAlign = 20;
+                }
+            }
             
         
             $('html').mousemove(function (event) {
@@ -68,14 +79,6 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
-                // console.log(`that.newMousePosition ${that.newMousePosition}`);
-                // console.log(`that.percentOfSlider ${that.percentOfSlider}`);
-                // console.log(`that.handlerPositionWithRange ${that.handlerPositionWithRange}`);
-                // console.log(`that.handlerPositionWithStep ${that.handlerPositionWithStep}`);
-                // console.log(`that.handlerPositionToSlider ${that.handlerPositionToSlider}`);
-                
-                
-
                 // that.modelChangedSubject.notifyObservers();
             });
 
@@ -123,7 +126,7 @@
 //////// CONTROLLER //////////////////////////////////////////
 
         SLIDER.Controller = function(model, view, opts, config){
-            
+            var that = this;
             var options = opts;
             
             
@@ -131,7 +134,7 @@
             view.setRange(options.range);
             view.setWidth(options.width);
             view.setInput(options.input);
-            view.setScale(options.minValue, options.maxValue);
+            view.setScale(options.minValue, options.maxValue, options.step);
             view.showScale(options.scale);
             
             model.setMinValue(options.minValue);
@@ -145,21 +148,25 @@
             model.sliderTop = view.slider.offset().top;
             model.vertical = options.vertical;
 
-            if(options.vertical && options.vertical !== 'undefined'){
-                var direction = 'top';
-                var popupAlign = 17;
-            }else{
-                var direction = 'left';
-                var popupAlign = 20;
-            }
+            // that.setDirection = function(vertical){
+            //     var isVertical = vertical;
+            //     if(isVertical && isVertical !== 'undefined'){
+            //         that.direction = 'top';
+            //         that.popupAlign = 17;
+            //     }else{
+            //         that.direction = 'left';
+            //         that.popupAlign = 20;
+            //     }
+            // }
+            model.setDirection(options.vertical);
               
             var newStartPositionF = model.getHandlerPositionWithStep(options.startPosition[0], options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPositionF = model.getHandlerPositionToSlider(newStartPositionF, options.minValue, options.maxValue, options.width);
-            view.handler.css(direction, newStartPositionF );
+            view.handler.css(model.direction, newStartPositionF );
 
             var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
-            view.handlerSecond.css(direction, newStartPositionS);
+            view.handlerSecond.css(model.direction, newStartPositionS);
             
 
             var firstHandler = model.handlerPositionToSlider,
@@ -171,7 +178,7 @@
                 view.slider.click(function(){
                         if(!options.range){
                             var object = {};
-                            object[direction] = `${model.handlerPositionToSlider - 10}px`;
+                            object[model.direction] = `${model.handlerPositionToSlider - 10}px`;
                             view.handler.animate(object, 500);
                             view.input.val(model.handlerPositionWithStep);
                             view.handler.clearQueue();
@@ -193,15 +200,15 @@
                     firstHandler = model.handlerPositionToSlider;
                     firstInput = model.handlerPositionWithStep;
                     if(options.range){
-                        if(firstHandler < secondHandler-options.step){
-                            view.handler.css(direction, model.handlerPositionToSlider -10);
-                            view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                        if(firstHandler < secondHandler){
+                            view.handler.css(model.direction, model.handlerPositionToSlider -10);
+                            view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                             view.popup.text(model.handlerPositionWithStep);
                             view.input.val(`${firstInput} - ${secondInput}`);
                         }  
                     }else{
-                        view.handler.css(direction, model.handlerPositionToSlider -10);
-                        view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                        view.handler.css(model.direction, model.handlerPositionToSlider -10);
+                        view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(model.handlerPositionWithStep);
                     }
@@ -215,6 +222,7 @@
                 });
             });                                                                                     /////////
 
+            
             view.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
                 $(document).on('mousemove', function () {
                     if(options.popup && options.popup !== 'undefined'){
@@ -227,9 +235,9 @@
                     }
                     secondHandler = model.handlerPositionToSlider;
                     secondInput = model.handlerPositionWithStep;
-                    if(secondHandler > firstHandler+options.step){
-                        view.handlerSecond.css(direction, model.handlerPositionToSlider -10);
-                        view.popup.css(direction, model.handlerPositionToSlider -popupAlign);
+                    if(secondHandler > firstHandler){
+                        view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
+                        view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(`${firstInput} - ${secondInput}`);
                     }
@@ -248,7 +256,7 @@
                 var newPosFromInput = ((view.input.val() - options.minValue) / (options.maxValue - options.minValue));
                 newPosFromInput *= options.width;
                 var object = {};
-                object[direction] = `${newPosFromInput - 10}px`;
+                object[model.direction] = `${newPosFromInput - 10}px`;
                 view.handler.animate(object, 500);
             })
 
@@ -258,7 +266,12 @@
 
             config.configVerticalChangedSubject.addObserver(function () {
                 view.setVertical(config.newVertical);
-                model.vertical = config.newVertical;
+                model.vertical = options.vertical;
+                model.setDirection(options.vertical);
+                // model.getHandlerPositionToSlider(model.handlerPositionWithStep, model.minValue, model.maxValue, model.sliderWidth);
+                // view.handler.css(model.direction, model.handlerPositionToSlider -10);
+                // view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
+                
             });
 
             config.configPopupChangedSubject.addObserver(function () {
@@ -267,6 +280,8 @@
             
             config.configStepChangedSubject.addObserver(function () {
                 model.step = options.step;
+                view.scale.empty();
+                view.setScale(options.minValue, options.maxValue, options.step);
             });
 
             config.configInputChangedSubject.addObserver(function () {
@@ -280,13 +295,16 @@
 
             config.configMaxValueChangedSubject.addObserver(function () {
                 model.maxValue = options.maxValue;
-                view.setScale(options.minValue, options.maxValue);
+                view.scale.empty();
+                view.setScale(options.minValue, options.maxValue, options.step);
             });
 
-            // config.configMinValueChangedSubject.addObserver(function () {
-            //     model.setMinValue(options.minValue);  
-            //     view.setScale(options.minValue, options.maxValue);  
-            // });
+            config.configMinValueChangedSubject.addObserver(function () {
+                model.setMinValue(parseInt(options.minValue));  
+                view.setScale(options.minValue, options.maxValue);
+                view.scale.empty();
+                view.setScale(options.minValue, options.maxValue, options.step);  
+            });
 
             config.configChangedSubject.addObserver(function () {
             });
@@ -307,23 +325,25 @@
             that.handler = $('<div class="sliderHandler"></div>').appendTo(that.slider);
             that.popup = $('<div class="popup"></div>').appendTo(that.slider).hide();
             that.handlerSecond = $('<div class="sliderHandlerSecond"></div>').appendTo(that.slider).hide();
-            that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
             that.scale = $('<div class="scale"></div>').appendTo(that.slider);
-            that.scaleStart = $('<span class="scaleStart"></span>').appendTo(that.scale);
-            that.scaleQuarter = $('<span class="scaleQuarter"></span>').appendTo(that.scale);
-            that.scaleHalf = $('<span class="scaleHalf"></span>').appendTo(that.scale);
-            that.scaleThreeQuarter = $('<span class="scaleThreeQuarter"></span>').appendTo(that.scale);
-            that.scaleEnd = $('<span class="scaleEnd"></span>').appendTo(that.scale);
+            that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
+            
 
-            this.setScale = function(minValue, maxValue){
-                var quarter = Math.round((maxValue-minValue)/4)+minValue,
-                    threeQuarter = (quarter*3)+minValue,
-                    half = Math.round((maxValue-minValue)/2)+minValue;
+            this.setScale = function(minValue, maxValue, step){
+                minValue = parseInt(minValue);
+                maxValue = parseInt(maxValue);
+                step = parseInt(step);
+                that.scaleStart = $('<span class="scaleStart"></span>').appendTo(that.scale);
                 that.scaleStart.text(minValue);
+                var scaleAmount = Math.round(maxValue-minValue)/step,
+                    scaleSum = minValue + step;
+                for (var i = 1; i < scaleAmount; i++){
+                    $('<span class="scaleMiddle"></span>').appendTo(that.scale).text(scaleSum);
+                    scaleSum += step;
+                }    
+                that.scaleEnd = $('<span class="scaleEnd"></span>').appendTo(that.scale);
                 that.scaleEnd.text(maxValue);
-                that.scaleQuarter.text(quarter);
-                that.scaleHalf.text(half);
-                that.scaleThreeQuarter.text(threeQuarter);
+                
             };
 
             this.showScale = function(value){
@@ -374,7 +394,21 @@
             
             this.setVertical = function(value){
                 that.vertical = value;
-          
+                if(that.vertical && that.vertical !== 'undefined'){
+                    that.slider.addClass('vertical').css("height", that.width);
+                    that.scale.addClass('scaleVertical');
+                    that.slider.css("width", 5);
+                    that.popup.addClass('vertical');
+                    that.handler.css('left', -7);
+                    that.handlerSecond.css('left', -7);
+                } else {
+                    that.slider.removeClass('vertical').css("height", 5);
+                    that.slider.css("width", that.width);
+                    that.popup.removeClass('vertical');
+                    that.scale.removeClass('scaleVertical');
+                    that.handler.css('top', -7);
+                    that.handlerSecond.css('top', -7);
+                }
             }
             
             
@@ -394,7 +428,7 @@
             this.configWidthChangedSubject = SLIDER.makeObservableSubject();
             $configWidth =  $('<label>Width</label>').appendTo(that.configBody);
             that.configWidth = $('<input type="text" name="width">').appendTo(that.configBody);
-            that.configWidth.val(options.width);
+            that.configWidth.val(parseInt(options.width));
             
             that.configWidth.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 
@@ -413,14 +447,14 @@
                 that.configStepChangedSubject.notifyObservers();
             });
 
-            // this.configMinValueChangedSubject = SLIDER.makeObservableSubject();
-            // $configMinValue =  $('<label>MinValue</label>').appendTo(that.configBody);
-            // that.configMinValue = $('<input type="text" name="MinValue">').appendTo(that.configBody);
-            // that.configMinValue.val(options.minValue);
-            // that.configMinValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
-            //     options.minValue =  that.configMinValue.val(); 
-            //     that.configMinValueChangedSubject.notifyObservers();
-            // });
+            this.configMinValueChangedSubject = SLIDER.makeObservableSubject();
+            $configMinValue =  $('<label>MinValue</label>').appendTo(that.configBody);
+            that.configMinValue = $('<input type="text" name="MinValue">').appendTo(that.configBody);
+            that.configMinValue.val(options.minValue);
+            that.configMinValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                options.minValue =  parseInt(that.configMinValue.val()); 
+                that.configMinValueChangedSubject.notifyObservers();
+            });
 
             this.configMaxValueChangedSubject = SLIDER.makeObservableSubject();
             $configMaxValue =  $('<label>MaxValue</label>').appendTo(that.configBody);
