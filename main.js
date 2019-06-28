@@ -208,7 +208,9 @@
                         if(firstHandler < secondHandler){
                             
                             view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                            if(options.progress){
+                                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                            }
                             view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                             view.popup.text(model.handlerPositionWithStep);
                             view.input.val(`${firstInput} - ${secondInput}`);
@@ -216,7 +218,9 @@
                     }else{
                         firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                         view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                        view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
+                        if(options.progress){
+                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
+                        }
                         view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(model.handlerPositionWithStep);
@@ -247,7 +251,9 @@
                     secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                     if(secondHandler > firstHandler){
                         view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
-                        view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                        if(options.progress){
+                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                        }
                         view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
                         view.popup.text(model.handlerPositionWithStep);
                         view.input.val(`${firstInput} - ${secondInput}`);
@@ -542,7 +548,8 @@
             popup: false,
             range: false,
             input: false,
-            scale: true
+            scale: true,
+            progress: true
         };
     
        
@@ -557,7 +564,8 @@ $(document).ready(function() {
             input: false,
             step: 30,
             minValue: 0,
-            maxValue: 330
+            maxValue: 330,
+            progress: true
         });
     $(".2").MySlider(
         {
@@ -569,7 +577,8 @@ $(document).ready(function() {
             vertical: true,
             popup: true,
             input: true,
-            range:true
+            range:true,
+            progress: true
         });
     $(".3").MySlider(
         {
@@ -579,6 +588,7 @@ $(document).ready(function() {
             input: false,
             step: 30,
             minValue: 0,
-            maxValue: 330
+            maxValue: 330,
+            progress: false
         });
 });
