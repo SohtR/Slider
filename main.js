@@ -183,7 +183,10 @@
 
             
 
-            view.firstHandlerPos = model.handlerPositionToSlider;
+            // view.firstHandlerPos = model.handlerPositionToSlider;
+            view.firstHandlerPos = view.handler.css('left');
+            console.log(view.firstHandlerPos);
+            
             view.secondHandlerPos = model.handlerPositionToSlider;
             view.secondInput = options.startPosition[1];
             view.firstInput = options.startPosition[0];
@@ -196,26 +199,22 @@
                 view.handlerPositionWithStep = model.handlerPositionWithStep;
                 view.popupAlign = model.popupAlign;
                 view.directionProgress = model.directionProgress;
-                // view.firstProgressPosition = (model.handlerPositionToSlider/options.width)*100,
-                // view.secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                
+               
                 view.popupOption = options.popup;
                 view.minValue = options.minValue;
                 view.maxValue = options.maxValue;
                 view.width = options.width;
                 view.progress = options.progress;
                 view.startPosition = options.startPosition;
-
+                // view.setStartProgressPosition(model.handlerPositionToSlider, options.width);
+                // view.setEndProgressPosition(model.handlerPositionToSlider, options.width);
+                config.configVerticalChangedSubject.addObserver(function () {
+                    view.handlerPositionToSlider = model.handlerPositionToSlider;
+                })
             });
+                                                  
             
             
-            view.input.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
-                var newPosFromInput = ((view.input.val() - options.minValue) / (options.maxValue - options.minValue));
-                newPosFromInput *= options.width;
-                var object = {};
-                object[model.direction] = `${newPosFromInput - 10}px`;
-                view.handler.animate(object, 500);
-            })
 
             config.configRangeChangedSubject.addObserver(function () {
                 view.setRange(config.newRange);
@@ -226,7 +225,7 @@
                 model.vertical = options.vertical;
                 model.setDirection(options.vertical);
                 // model.getHandlerPositionToSlider(model.handlerPositionWithStep, model.minValue, model.maxValue, model.sliderWidth);
-                // view.handler.css(model.direction, model.handlerPositionToSlider -10);
+                view.handlerPositionToSlider = model.handlerPositionToSlider;
                 // view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
                 
             });
@@ -273,8 +272,38 @@
             config.configProgressChangedSubject.addObserver(function () {
                 view.slider.css('background', '#e5e5e5');
             });
+
+            var firstHandler = model.handlerPositionToSlider,                                                       ///////  Установка полосы прогресса
+                secondHandler = model.handlerPositionToSlider,
+                firstProgressPosition = (model.handlerPositionToSlider/options.width)*100,
+                secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
             
-            
+                view.handler.on('mousedown', function() {                                               
+                $(document).on('mousemove', function () {
+                    firstHandler = model.handlerPositionToSlider;
+                    firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
+                    if(options.range){
+                        if(firstHandler < secondHandler){
+                            if(options.progress){
+                                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                            }
+                        }  
+                    }else{
+                        firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
+                        if(options.progress){
+                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
+                        }
+                    }
+                });
+            });                                                                                     /////////
+            view.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
+                $(document).on('mousemove', function () {
+                    secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
+                        if(options.progress){
+                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                        }
+                });
+            });              
         };
 
 /////// VIEW //////////////////////////////////////
@@ -289,32 +318,26 @@
             that.scale = $('<div class="scale"></div>').appendTo(that.slider);
             that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
             
-            // var startProgress = (that.newStartPositionF/that.width)*100;
-            // var endProgress = (that.newStartPositionS/that.width)*100;
-            // if (that.range){
-            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
-            // } else {
-            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
-            // }
-            var startProgress = (that.handlerPositionToSlider/that.width)*100;
-            var endProgress = (that.handlerPositionToSlider/that.width)*100;
-            if(that.progress){
-                that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
-            }
+            
 
             that.slider.mousemove(function(){ 
                 that.slider.click(function(){
-                        if(!that.range){
-                            var object = {};
-                            object[that.direction] = `${that.handlerPositionToSlider - 10}px`;
-                            that.handler.animate(object, 500);
-                            that.input.val(that.handlerPositionWithStep);
-                            that.handler.clearQueue();
-                        }
+                    if(!that.range){
+                        var object = {};
+                        object[that.direction] = `${that.handlerPositionToSlider - 10}px`;
+                        that.handler.animate(object, 500);
+                        that.input.val(that.handlerPositionWithStep);
+                        that.handler.clearQueue();
+                    }
                 });
             });
+            that.firstHandlerPos = that.handlerPositionToSlider;
+            that.secondHandlerPos = that.handlerPositionToSlider;
+            // var firstProgressPosition = (that.handlerPositionToSlider/that.width)*100,
+            // secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
             
-
+            
+            this.viewHandlerChangedSubject = SLIDER.makeObservableSubject();
             that.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
                 $(document).on('mousemove', function () {
                     if(that.popupOption && that.popupOption !== 'undefined'){
@@ -325,30 +348,31 @@
                         that.handlerPositionToSlider = ((that.handlerPositionWithStep - that.minValue) / (that.maxValue - that.minValue));
                         that.handlerPositionToSlider *= that.width;
                     }
-                    
+                    firstHandler = that.handlerPositionToSlider;
                     that.firstHandlerPos = that.handlerPositionToSlider;
                     that.firstInput = that.handlerPositionWithStep;
-                    startProgress = (that.handlerPositionToSlider/that.width)*100;
+                    firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                     if(that.range){
                         if(that.firstHandlerPos < that.secondHandlerPos){
                             that.handler.css(that.direction, that.handlerPositionToSlider -10);
-                            if(that.progress){
-                                that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
-                            }
+                            // if(that.progress){
+                            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                            // }
                             that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                             that.popup.text(that.handlerPositionWithStep);
                             that.input.val(`${that.firstInput} - ${that.secondInput}`);
                         }  
                     }else{
-                        startProgress = (that.handlerPositionToSlider/that.width)*100;
+                        firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                         that.handler.css(that.direction, that.handlerPositionToSlider -10);
-                        if(that.progress){
-                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
-                        }
+                        // if(that.progress){
+                        //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
+                        // }
                         that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                         that.popup.text(that.handlerPositionWithStep);
                         that.input.val(that.handlerPositionWithStep);
                     }
+                    that.viewHandlerChangedSubject.notifyObservers();
                 });
                 $(document).mouseup(function(){
                     $(document).off('mousemove');
@@ -369,12 +393,13 @@
                     }
                     that.secondHandlerPos = that.handlerPositionToSlider;
                     that.secondInput = that.handlerPositionWithStep;
-                    endProgress = (that.handlerPositionToSlider/that.width)*100;
+                    secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                     if(that.secondHandlerPos > that.firstHandlerPos){
+                        
                         that.handlerSecond.css(that.direction, that.handlerPositionToSlider -10);
-                        if(that.progress){
-                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
-                        }
+                        // if(that.progress){
+                        //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
+                        // }
                         that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                         that.popup.text(that.handlerPositionWithStep);
                         that.input.val(`${that.firstInput} - ${that.secondInput}`);
@@ -387,6 +412,14 @@
                 });
             });                
             
+            that.input.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+                var newPosFromInput = ((that.input.val() - that.minValue) / (that.maxValue - that.minValue));
+                newPosFromInput *= that.width;
+                var object = {};
+                object[that.direction] = `${newPosFromInput - 10}px`;
+                that.handler.animate(object, 500);
+                
+            })
 
             this.setScale = function(minValue, maxValue, step){
                 minValue = parseInt(minValue);
@@ -461,14 +494,18 @@
                     that.popup.addClass('vertical');
                     that.popup.css('left', 25);
                     that.handler.css('left', -7);
+                    that.handler.css('top', that.firstHandlerPos -10);
                     that.handlerSecond.css('left', -7);
+                    that.handlerSecond.css('top', that.secondHandlerPos -10);
                 } else {
                     that.slider.removeClass('vertical').css("height", 5);
                     that.slider.css("width", that.width);
                     that.popup.removeClass('vertical');
                     that.scale.removeClass('scaleVertical');
                     that.handler.css('top', -7);
+                    that.handler.css('left', that.firstHandlerPos -10);
                     that.handlerSecond.css('top', -7);
+                    that.handlerSecond.css('left', that.secondHandlerPos -10);
                     that.popup.css('top', -45);
                 }
             }
