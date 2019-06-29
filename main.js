@@ -81,9 +81,6 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
-                
-                // that.getNewStartPositionF(that.startPosition[0], that.step, that.minValue, that.maxValue, that.sliderWidth);
-                // that.getNewStartPositionS(that.startPosition[1], that.step, that.minValue, that.maxValue, that.sliderWidth);
 
                 that.modelChangedSubject.notifyObservers();
             });
@@ -125,17 +122,7 @@
                 return  that.handlerPositionToSlider;
             };
             
-            // this.getNewStartPositionF = function(startPosition, step, minValue, maxValue, sliderWidth){
-            //     var temp = that.getHandlerPositionWithStep(startPosition, step);
-            //     that.newStartPositionF = that.getHandlerPositionToSlider(temp, minValue, maxValue, sliderWidth);
-            //     return that.newStartPositionF;
-            // };
-
-            // this.getNewStartPositionS = function(startPosition, step, minValue, maxValue, sliderWidth){
-            //     var temp = that.getHandlerPositionWithStep(startPosition, step);
-            //     that.newStartPositionS = that.getHandlerPositionToSlider(temp, minValue, maxValue, sliderWidth);
-            //     return that.newStartPositionS;
-            // }
+            
 
         };
         
@@ -167,11 +154,15 @@
               
             var newStartPositionF = model.getHandlerPositionWithStep(options.startPosition[0], options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPositionF = model.getHandlerPositionToSlider(newStartPositionF, options.minValue, options.maxValue, options.width);
-            view.handler.css(model.direction, newStartPositionF );
+            view.handler.css(model.direction, newStartPositionF - 10);
 
             var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
-            view.handlerSecond.css(model.direction, newStartPositionS);
+            view.handlerSecond.css(model.direction, newStartPositionS-10);
+
+            view.firstHandler = newStartPositionF;
+            view.secondHandlerPos = newStartPositionS;
+
 
             var startProgress = (newStartPositionF/options.width)*100;
             var endProgress = (newStartPositionS/options.width)*100;
@@ -183,10 +174,6 @@
 
             
 
-            // view.firstHandlerPos = model.handlerPositionToSlider;
-            view.firstHandlerPos = view.handler.css('left');
-            console.log(view.firstHandlerPos);
-            
             view.secondHandlerPos = model.handlerPositionToSlider;
             view.secondInput = options.startPosition[1];
             view.firstInput = options.startPosition[0];
@@ -224,9 +211,7 @@
                 view.setVertical(config.newVertical);
                 model.vertical = options.vertical;
                 model.setDirection(options.vertical);
-                // model.getHandlerPositionToSlider(model.handlerPositionWithStep, model.minValue, model.maxValue, model.sliderWidth);
                 view.handlerPositionToSlider = model.handlerPositionToSlider;
-                // view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
                 
             });
 
@@ -281,6 +266,9 @@
                 view.handler.on('mousedown', function() {                                               
                 $(document).on('mousemove', function () {
                     firstHandler = model.handlerPositionToSlider;
+                    if(typeof(firstHandler) == 'undefined'){
+                        firstProgressPosition = parseInt(that.handler.css('left'))+10;
+                    }
                     firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                     if(options.range){
                         if(firstHandler < secondHandler){
@@ -295,8 +283,8 @@
                         }
                     }
                 });
-            });                                                                                     /////////
-            view.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
+            });                                                                                     
+            view.handlerSecond.on('mousedown', function() {                                         
                 $(document).on('mousemove', function () {
                     secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                         if(options.progress){
@@ -306,7 +294,7 @@
             });              
         };
 
-/////// VIEW //////////////////////////////////////
+/////// VIEW //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
         SLIDER.View = function (rootObject) {
             var that = this;
@@ -331,13 +319,16 @@
                     }
                 });
             });
-            that.firstHandlerPos = that.handlerPositionToSlider;
-            that.secondHandlerPos = that.handlerPositionToSlider;
+            // that.firstHandlerPos = that.handlerPositionToSlider;
+            // that.secondHandlerPos = that.handlerPositionToSlider;
             // var firstProgressPosition = (that.handlerPositionToSlider/that.width)*100,
             // secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
             
             
             this.viewHandlerChangedSubject = SLIDER.makeObservableSubject();
+            
+                
+            
             that.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
                 $(document).on('mousemove', function () {
                     if(that.popupOption && that.popupOption !== 'undefined'){
@@ -348,13 +339,13 @@
                         that.handlerPositionToSlider = ((that.handlerPositionWithStep - that.minValue) / (that.maxValue - that.minValue));
                         that.handlerPositionToSlider *= that.width;
                     }
-                    firstHandler = that.handlerPositionToSlider;
+                    that.firstHandler = that.handlerPositionToSlider;
                     that.firstHandlerPos = that.handlerPositionToSlider;
                     that.firstInput = that.handlerPositionWithStep;
                     firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                     if(that.range){
                         if(that.firstHandlerPos < that.secondHandlerPos){
-                            that.handler.css(that.direction, that.handlerPositionToSlider -10);
+                            that.handler.css(that.direction, that.firstHandler -10);
                             // if(that.progress){
                             //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
                             // }
@@ -381,7 +372,7 @@
                 });
             });    
             
-            that.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
+            that.handlerSecond.on('mousedown', function() { 
                 $(document).on('mousemove', function () {
                     if(that.popupOption && that.popupOption !== 'undefined'){
                     that.popup.show();
@@ -394,9 +385,13 @@
                     that.secondHandlerPos = that.handlerPositionToSlider;
                     that.secondInput = that.handlerPositionWithStep;
                     secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
-                    if(that.secondHandlerPos > that.firstHandlerPos){
+                    if(typeof(that.firstHandlerPos) == 'undefined'){
+                        that.firstHandlerPos = parseInt(that.handler.css('left'))+10;
+                    }
+                    if(that.secondHandlerPos > that.firstHandlerPos ){
                         
-                        that.handlerSecond.css(that.direction, that.handlerPositionToSlider -10);
+                        
+                        that.handlerSecond.css(that.direction, that.secondHandlerPos -10);
                         // if(that.progress){
                         //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
                         // }
@@ -411,7 +406,7 @@
                     that.popup.hide();
                 });
             });                
-            
+       
             that.input.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 var newPosFromInput = ((that.input.val() - that.minValue) / (that.maxValue - that.minValue));
                 newPosFromInput *= that.width;
