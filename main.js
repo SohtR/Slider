@@ -46,7 +46,7 @@
         SLIDER.Model = function(){
             var that = this;
             this.mousePosition = {};
-            // this.modelChangedSubject = SLIDER.makeObservableSubject();
+            this.modelChangedSubject = SLIDER.makeObservableSubject();
             
             this.setMinValue = function(value){
                 that.minValue = value;
@@ -81,7 +81,11 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
-                // that.modelChangedSubject.notifyObservers();
+                
+                // that.getNewStartPositionF(that.startPosition[0], that.step, that.minValue, that.maxValue, that.sliderWidth);
+                // that.getNewStartPositionS(that.startPosition[1], that.step, that.minValue, that.maxValue, that.sliderWidth);
+
+                that.modelChangedSubject.notifyObservers();
             });
 
             this.getMousePosition = function(){
@@ -121,7 +125,17 @@
                 return  that.handlerPositionToSlider;
             };
             
-            
+            // this.getNewStartPositionF = function(startPosition, step, minValue, maxValue, sliderWidth){
+            //     var temp = that.getHandlerPositionWithStep(startPosition, step);
+            //     that.newStartPositionF = that.getHandlerPositionToSlider(temp, minValue, maxValue, sliderWidth);
+            //     return that.newStartPositionF;
+            // };
+
+            // this.getNewStartPositionS = function(startPosition, step, minValue, maxValue, sliderWidth){
+            //     var temp = that.getHandlerPositionWithStep(startPosition, step);
+            //     that.newStartPositionS = that.getHandlerPositionToSlider(temp, minValue, maxValue, sliderWidth);
+            //     return that.newStartPositionS;
+            // }
 
         };
         
@@ -141,7 +155,7 @@
             view.getWidth(options.width);
             model.setMinValue(options.minValue);
 
-            // model.minValue = options.minValue;                  //// Передача опций в модель
+            model.minValue = options.minValue;                  //// Передача опций в модель
             model.maxValue = options.maxValue;
             model.step = options.step;
             model.sliderWidth = options.width;
@@ -149,17 +163,6 @@
             model.sliderLeft = view.slider.offset().left;
             model.sliderTop = view.slider.offset().top;
             model.vertical = options.vertical;
-
-            // that.setDirection = function(vertical){
-            //     var isVertical = vertical;
-            //     if(isVertical && isVertical !== 'undefined'){
-            //         that.direction = 'top';
-            //         that.popupAlign = 17;
-            //     }else{
-            //         that.direction = 'left';
-            //         that.popupAlign = 20;
-            //     }
-            // }
             model.setDirection(options.vertical);
               
             var newStartPositionF = model.getHandlerPositionWithStep(options.startPosition[0], options.step);                                   /////// Рассчет стартовой позиции ползунка
@@ -169,105 +172,42 @@
             var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции ползунка
             newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
             view.handlerSecond.css(model.direction, newStartPositionS);
+
+            var startProgress = (newStartPositionF/options.width)*100;
+            var endProgress = (newStartPositionS/options.width)*100;
+            if (options.range){
+                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
+            } else {
+                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
+            }
+
             
 
-            var firstHandler = model.handlerPositionToSlider,
-                secondHandler = model.handlerPositionToSlider,
-                secondInput = options.startPosition[1],
-                firstInput = options.startPosition[0],
-                firstProgressPosition = (model.handlerPositionToSlider/options.width)*100,
-                secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
+            view.firstHandlerPos = model.handlerPositionToSlider;
+            view.secondHandlerPos = model.handlerPositionToSlider;
+            view.secondInput = options.startPosition[1];
+            view.firstInput = options.startPosition[0];
             
-            view.slider.mousemove(function(){                                                       /////// Передвижение ползунка кликом на слайдере
-                view.slider.click(function(){
-                        if(!options.range){
-                            var object = {};
-                            object[model.direction] = `${model.handlerPositionToSlider - 10}px`;
-                            view.handler.animate(object, 500);
-                            view.input.val(model.handlerPositionWithStep);
-                            view.handler.clearQueue();
-                        }
-                });
+
+            model.modelChangedSubject.addObserver(function () {
+                view.direction = model.direction;
+                view.range = options.range;
+                view.handlerPositionToSlider = model.handlerPositionToSlider;
+                view.handlerPositionWithStep = model.handlerPositionWithStep;
+                view.popupAlign = model.popupAlign;
+                view.directionProgress = model.directionProgress;
+                // view.firstProgressPosition = (model.handlerPositionToSlider/options.width)*100,
+                // view.secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
+                
+                view.popupOption = options.popup;
+                view.minValue = options.minValue;
+                view.maxValue = options.maxValue;
+                view.width = options.width;
+                view.progress = options.progress;
+                view.startPosition = options.startPosition;
+
             });
             
-            view.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
-                $(document).on('mousemove', function () {
-                    if(options.popup && options.popup !== 'undefined'){
-                    view.popup.show();
-                    }
-                    if(model.handlerPositionWithStep < options.minValue ){
-                        model.handlerPositionWithStep = options.minValue;
-                        model.handlerPositionToSlider = ((model.handlerPositionWithStep - options.minValue) / (options.maxValue - options.minValue));
-                        model.handlerPositionToSlider *= options.width;
-                    }
-                    
-                    firstHandler = model.handlerPositionToSlider;
-                    firstInput = model.handlerPositionWithStep;
-                    firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                    if(options.range){
-                        if(firstHandler < secondHandler){
-                            
-                            view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                            if(options.progress){
-                                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                            }
-                            view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
-                            view.popup.text(model.handlerPositionWithStep);
-                            view.input.val(`${firstInput} - ${secondInput}`);
-                        }  
-                    }else{
-                        firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                        view.handler.css(model.direction, model.handlerPositionToSlider -10);
-                        if(options.progress){
-                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
-                        }
-                        view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
-                        view.popup.text(model.handlerPositionWithStep);
-                        view.input.val(model.handlerPositionWithStep);
-                    }
-                        
-                    
-                });
-                $(document).mouseup(function(){
-                    $(document).off('mousemove');
-                    $(document).off('mouseup');
-                    view.popup.hide();
-                });
-            });                                                                                     /////////
-
-            
-            view.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
-                $(document).on('mousemove', function () {
-                    if(options.popup && options.popup !== 'undefined'){
-                    view.popup.show();
-                    }
-                    if(model.handlerPositionWithStep > options.maxValue){
-                        model.handlerPositionWithStep = options.maxValue;
-                        model.handlerPositionToSlider = ((model.handlerPositionWithStep - options.minValue) / (options.maxValue - options.minValue));
-                        model.handlerPositionToSlider *= options.width;
-                    }
-                    secondHandler = model.handlerPositionToSlider;
-                    secondInput = model.handlerPositionWithStep;
-                    secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                    if(secondHandler > firstHandler){
-                        view.handlerSecond.css(model.direction, model.handlerPositionToSlider -10);
-                        if(options.progress){
-                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                        }
-                        view.popup.css(model.direction, model.handlerPositionToSlider - model.popupAlign);
-                        view.popup.text(model.handlerPositionWithStep);
-                        view.input.val(`${firstInput} - ${secondInput}`);
-                    }
-                    
-                     
-                    
-                });
-                $(document).mouseup(function(){
-                    $(document).off('mousemove');
-                    $(document).off('mouseup');
-                    view.popup.hide();
-                });
-            });                                                                                     /////////
             
             view.input.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
                 var newPosFromInput = ((view.input.val() - options.minValue) / (options.maxValue - options.minValue));
@@ -349,6 +289,104 @@
             that.scale = $('<div class="scale"></div>').appendTo(that.slider);
             that.input = $('<input type="text" class="handlerPosition"></input>').appendTo(that.slider).hide();
             
+            // var startProgress = (that.newStartPositionF/that.width)*100;
+            // var endProgress = (that.newStartPositionS/that.width)*100;
+            // if (that.range){
+            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
+            // } else {
+            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
+            // }
+            var startProgress = (that.handlerPositionToSlider/that.width)*100;
+            var endProgress = (that.handlerPositionToSlider/that.width)*100;
+            if(that.progress){
+                that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
+            }
+
+            that.slider.mousemove(function(){ 
+                that.slider.click(function(){
+                        if(!that.range){
+                            var object = {};
+                            object[that.direction] = `${that.handlerPositionToSlider - 10}px`;
+                            that.handler.animate(object, 500);
+                            that.input.val(that.handlerPositionWithStep);
+                            that.handler.clearQueue();
+                        }
+                });
+            });
+            
+
+            that.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
+                $(document).on('mousemove', function () {
+                    if(that.popupOption && that.popupOption !== 'undefined'){
+                    that.popup.show();
+                    }
+                    if(that.handlerPositionWithStep < that.minValue ){
+                        that.handlerPositionWithStep = that.minValue;
+                        that.handlerPositionToSlider = ((that.handlerPositionWithStep - that.minValue) / (that.maxValue - that.minValue));
+                        that.handlerPositionToSlider *= that.width;
+                    }
+                    
+                    that.firstHandlerPos = that.handlerPositionToSlider;
+                    that.firstInput = that.handlerPositionWithStep;
+                    startProgress = (that.handlerPositionToSlider/that.width)*100;
+                    if(that.range){
+                        if(that.firstHandlerPos < that.secondHandlerPos){
+                            that.handler.css(that.direction, that.handlerPositionToSlider -10);
+                            if(that.progress){
+                                that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
+                            }
+                            that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
+                            that.popup.text(that.handlerPositionWithStep);
+                            that.input.val(`${that.firstInput} - ${that.secondInput}`);
+                        }  
+                    }else{
+                        startProgress = (that.handlerPositionToSlider/that.width)*100;
+                        that.handler.css(that.direction, that.handlerPositionToSlider -10);
+                        if(that.progress){
+                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
+                        }
+                        that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
+                        that.popup.text(that.handlerPositionWithStep);
+                        that.input.val(that.handlerPositionWithStep);
+                    }
+                });
+                $(document).mouseup(function(){
+                    $(document).off('mousemove');
+                    $(document).off('mouseup');
+                    that.popup.hide();
+                });
+            });    
+            
+            that.handlerSecond.on('mousedown', function() {                                         ////// Передвижение второго ползунка если задан диапазон
+                $(document).on('mousemove', function () {
+                    if(that.popupOption && that.popupOption !== 'undefined'){
+                    that.popup.show();
+                    }
+                    if(that.handlerPositionWithStep > that.maxValue){
+                        that.handlerPositionWithStep = that.maxValue;
+                        that.handlerPositionToSlider = ((that.handlerPositionWithStep - that.minValue) / (that.maxValue - that.minValue));
+                        that.handlerPositionToSlider *= that.width;
+                    }
+                    that.secondHandlerPos = that.handlerPositionToSlider;
+                    that.secondInput = that.handlerPositionWithStep;
+                    endProgress = (that.handlerPositionToSlider/that.width)*100;
+                    if(that.secondHandlerPos > that.firstHandlerPos){
+                        that.handlerSecond.css(that.direction, that.handlerPositionToSlider -10);
+                        if(that.progress){
+                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
+                        }
+                        that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
+                        that.popup.text(that.handlerPositionWithStep);
+                        that.input.val(`${that.firstInput} - ${that.secondInput}`);
+                    }
+                });
+                $(document).mouseup(function(){
+                    $(document).off('mousemove');
+                    $(document).off('mouseup');
+                    that.popup.hide();
+                });
+            });                
+            
 
             this.setScale = function(minValue, maxValue, step){
                 minValue = parseInt(minValue);
@@ -412,17 +450,16 @@
             this.getWidth = function(value){
                 return that.width = value;
             };
-            
-            console.log(that.width);
-            
 
             this.setVertical = function(value){
                 that.vertical = value;
+                
                 if(that.vertical && that.vertical !== 'undefined'){
                     that.slider.addClass('vertical').css("height", that.width);
                     that.scale.addClass('scaleVertical');
                     that.slider.css("width", 5);
                     that.popup.addClass('vertical');
+                    that.popup.css('left', 25);
                     that.handler.css('left', -7);
                     that.handlerSecond.css('left', -7);
                 } else {
@@ -432,6 +469,7 @@
                     that.scale.removeClass('scaleVertical');
                     that.handler.css('top', -7);
                     that.handlerSecond.css('top', -7);
+                    that.popup.css('top', -45);
                 }
             }
             
@@ -449,8 +487,6 @@
                 that.configBody = $('<div class="config"></div>').appendTo(rootObject);
             }
             
-            
-
             this.configWidthChangedSubject = SLIDER.makeObservableSubject();
             $configWidth =  $('<label>Width</label>').appendTo(that.configBody);
             that.configWidth = $('<input type="text" name="width">').appendTo(that.configBody);
@@ -602,13 +638,13 @@ $(document).ready(function() {
         });
     $(".3").MySlider(
         {
-            range: true,
-            startPosition: [0, 330],
+            startPosition: [50, 330],
             popup: true,
             input: false,
             step: 30,
             minValue: 0,
             maxValue: 330,
-            progress: false
+            progress: true,
+            config:true
         });
 });
