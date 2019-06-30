@@ -193,8 +193,6 @@
                 view.width = options.width;
                 view.progress = options.progress;
                 view.startPosition = options.startPosition;
-                // view.setStartProgressPosition(model.handlerPositionToSlider, options.width);
-                // view.setEndProgressPosition(model.handlerPositionToSlider, options.width);
                 config.configVerticalChangedSubject.addObserver(function () {
                     view.handlerPositionToSlider = model.handlerPositionToSlider;
                 })
@@ -266,9 +264,6 @@
                 view.handler.on('mousedown', function() {                                               
                 $(document).on('mousemove', function () {
                     firstHandler = model.handlerPositionToSlider;
-                    if(typeof(firstHandler) == 'undefined'){
-                        firstProgressPosition = parseInt(that.handler.css('left'))+10;
-                    }
                     firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                     if(options.range){
                         if(firstHandler < secondHandler){
@@ -284,8 +279,12 @@
                     }
                 });
             });                                                                                     
-            view.handlerSecond.on('mousedown', function() {                                         
+            view.handlerSecond.on('mousedown', function() {  
                 $(document).on('mousemove', function () {
+                    if(firstProgressPosition == secondProgressPosition){
+                        firstProgressPosition = startProgress;
+                    }
+                    
                     secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
                         if(options.progress){
                             view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
@@ -392,9 +391,6 @@
                         
                         
                         that.handlerSecond.css(that.direction, that.secondHandlerPos -10);
-                        // if(that.progress){
-                        //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                        // }
                         that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                         that.popup.text(that.handlerPositionWithStep);
                         that.input.val(`${that.firstInput} - ${that.secondInput}`);
@@ -645,7 +641,7 @@ $(document).ready(function() {
     $(".1").MySlider(
         {
             range: true,
-            startPosition: [0, 330],
+            startPosition: [50, 330],
             popup: true,
             input: false,
             step: 30,
