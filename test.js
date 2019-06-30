@@ -4,12 +4,9 @@ var mousePosition ={};
 var getMousePosition = {};
 var sliderLeft,
     sliderTop;
-$('html').mousemove(function (event) {
-    event = event || window.event;
-    var posX = event.pageX;
-    var posY = event.pageY;
-    mousePosition = {x: posX, y: posY};
-});
+
+var assert = require('chai').assert;
+
 getMousePosition = function(){
     return mousePosition;
 };
