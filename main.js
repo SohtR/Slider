@@ -156,7 +156,7 @@
             newStartPositionF = model.getHandlerPositionToSlider(newStartPositionF, options.minValue, options.maxValue, options.width);
             view.handler.css(model.direction, newStartPositionF - 10);
 
-            var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции ползунка
+            var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции второго ползунка
             newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
             view.handlerSecond.css(model.direction, newStartPositionS-10);
 
@@ -164,7 +164,7 @@
             view.secondHandlerPos = newStartPositionS;
 
 
-            var startProgress = (newStartPositionF/options.width)*100;
+            var startProgress = (newStartPositionF/options.width)*100;                                                                          //////// Установка стартовой позиции прогресс-бара
             var endProgress = (newStartPositionS/options.width)*100;
             if (options.range){
                 view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
@@ -179,7 +179,7 @@
             view.firstInput = options.startPosition[0];
             
 
-            model.modelChangedSubject.addObserver(function () {
+            model.modelChangedSubject.addObserver(function () {                                             //////// Передача переменных в View
                 view.direction = model.direction;
                 view.range = options.range;
                 view.handlerPositionToSlider = model.handlerPositionToSlider;
@@ -230,6 +230,7 @@
             config.configWidthChangedSubject.addObserver(function () {
                 view.setWidth(config.configWidth.val());
                 model.sliderWidth = config.configWidth.val();
+                
             });
 
             config.configMaxValueChangedSubject.addObserver(function () {
@@ -256,41 +257,7 @@
                 view.slider.css('background', '#e5e5e5');
             });
 
-            var firstHandler = model.handlerPositionToSlider,                                                       ///////  Установка полосы прогресса
-                secondHandler = model.handlerPositionToSlider,
-                firstProgressPosition = (model.handlerPositionToSlider/options.width)*100,
-                secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-            
-                view.handler.on('mousedown', function() {                                               
-                $(document).on('mousemove', function () {
-                    firstHandler = model.handlerPositionToSlider;
-                    firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                    if(options.range){
-                        if(firstHandler < secondHandler){
-                            if(options.progress){
-                                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                            }
-                        }  
-                    }else{
-                        firstProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                        if(options.progress){
-                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
-                        }
-                    }
-                });
-            });                                                                                     
-            view.handlerSecond.on('mousedown', function() {  
-                $(document).on('mousemove', function () {
-                    if(firstProgressPosition == secondProgressPosition){
-                        firstProgressPosition = startProgress;
-                    }
-                    
-                    secondProgressPosition = (model.handlerPositionToSlider/options.width)*100;
-                        if(options.progress){
-                            view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                        }
-                });
-            });              
+                          
         };
 
 /////// VIEW //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,17 +285,10 @@
                     }
                 });
             });
-            // that.firstHandlerPos = that.handlerPositionToSlider;
-            // that.secondHandlerPos = that.handlerPositionToSlider;
-            // var firstProgressPosition = (that.handlerPositionToSlider/that.width)*100,
-            // secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
-            
-            
             this.viewHandlerChangedSubject = SLIDER.makeObservableSubject();
             
-                
             
-            that.handler.on('mousedown', function() {                                               ///////  Передвижение ползунка
+            that.handler.on('mousedown', function() { 
                 $(document).on('mousemove', function () {
                     if(that.popupOption && that.popupOption !== 'undefined'){
                     that.popup.show();
@@ -338,26 +298,39 @@
                         that.handlerPositionToSlider = ((that.handlerPositionWithStep - that.minValue) / (that.maxValue - that.minValue));
                         that.handlerPositionToSlider *= that.width;
                     }
+                    firstHandler = that.handlerPositionToSlider;
                     that.firstHandler = that.handlerPositionToSlider;
                     that.firstHandlerPos = that.handlerPositionToSlider;
                     that.firstInput = that.handlerPositionWithStep;
-                    firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
+                    that.firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                     if(that.range){
                         if(that.firstHandlerPos < that.secondHandlerPos){
+                            if(typeof(that.firstProgressPosition) == 'undefined'|| isNaN(that.firstProgressPosition)){
+                                that.firstProgressPosition = ((parseInt(that.handler.css(that.direction))+10)/that.width)*100;
+                            }
+                            if(typeof(that.secondProgressPosition) == 'undefined'|| isNaN(that.secondProgressPosition)){
+                                that.secondProgressPosition = ((parseInt(that.handlerSecond.css(that.direction))+10)/that.width)*100;
+                            }
+                            if(that.progress){
+                                that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${that.firstProgressPosition}%, #e75735 ${that.firstProgressPosition}%, #e75735 ${that.secondProgressPosition}%, #e5e5e5 ${that.secondProgressPosition}%, #e5e5e5 100%)`);
+                            }
                             that.handler.css(that.direction, that.firstHandler -10);
-                            // if(that.progress){
-                            //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${firstProgressPosition}%, #e75735 ${firstProgressPosition}%, #e75735 ${secondProgressPosition}%, #e5e5e5 ${secondProgressPosition}%, #e5e5e5 100%)`);
-                            // }
                             that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                             that.popup.text(that.handlerPositionWithStep);
                             that.input.val(`${that.firstInput} - ${that.secondInput}`);
                         }  
                     }else{
-                        firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
+                        that.firstProgressPosition = (that.handlerPositionToSlider/that.width)*100;
+                        if(typeof(that.firstProgressPosition) == 'undefined'|| isNaN(that.firstProgressPosition)){
+                            that.firstProgressPosition = ((parseInt(that.handler.css(that.direction))+10)/that.width)*100;
+                        }
+                        if(typeof(that.secondProgressPosition) == 'undefined'|| isNaN(that.secondProgressPosition)){
+                            that.secondProgressPosition = ((parseInt(that.handlerSecond.css(that.direction))+10)/that.width)*100;
+                        }
+                        if(that.progress){
+                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${that.firstProgressPosition}%, #e5e5e5 ${that.firstProgressPosition}%, #e5e5e5 100%)`);
+                        }
                         that.handler.css(that.direction, that.handlerPositionToSlider -10);
-                        // if(that.progress){
-                        //     that.slider.css('background', `linear-gradient(${that.directionProgress}, #e75735 0%, #e75735 ${firstProgressPosition}%, #e5e5e5 ${firstProgressPosition}%, #e5e5e5 100%)`);
-                        // }
                         that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                         that.popup.text(that.handlerPositionWithStep);
                         that.input.val(that.handlerPositionWithStep);
@@ -372,6 +345,7 @@
             });    
             
             that.handlerSecond.on('mousedown', function() { 
+                
                 $(document).on('mousemove', function () {
                     if(that.popupOption && that.popupOption !== 'undefined'){
                     that.popup.show();
@@ -383,14 +357,22 @@
                     }
                     that.secondHandlerPos = that.handlerPositionToSlider;
                     that.secondInput = that.handlerPositionWithStep;
-                    secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
+                    that.secondProgressPosition = (that.handlerPositionToSlider/that.width)*100;
                     if(typeof(that.firstHandlerPos) == 'undefined'){
-                        that.firstHandlerPos = parseInt(that.handler.css('left'))+10;
+                        that.firstHandlerPos = parseInt(that.handler.css(that.direction))+10;
                     }
                     if(that.secondHandlerPos > that.firstHandlerPos ){
-                        
+                        if(typeof(that.firstProgressPosition) == 'undefined' || isNaN(that.firstProgressPosition)){
+                            that.firstProgressPosition = ((parseInt(that.handler.css(that.direction))+10)/that.width)*100;
+                        }
+                        if(typeof(that.secondProgressPosition) == 'undefined' || isNaN(that.secondProgressPosition)){
+                            that.secondProgressPosition = ((parseInt(that.handlerSecond.css(that.direction))+10)/that.width)*100;
+                        }
                         
                         that.handlerSecond.css(that.direction, that.secondHandlerPos -10);
+                        if(that.progress){
+                            that.slider.css('background', `linear-gradient(${that.directionProgress}, #e5e5e5 0%, #e5e5e5 ${that.firstProgressPosition}%, #e75735 ${that.firstProgressPosition}%, #e75735 ${that.secondProgressPosition}%, #e5e5e5 ${that.secondProgressPosition}%, #e5e5e5 100%)`);
+                        }
                         that.popup.css(that.direction, that.handlerPositionToSlider - that.popupAlign);
                         that.popup.text(that.handlerPositionWithStep);
                         that.input.val(`${that.firstInput} - ${that.secondInput}`);
@@ -505,7 +487,7 @@
             
             
         };
-        
+//////////////////  CONFIG    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         SLIDER.Config = function(rootObject, opts){
             var options = opts;
@@ -520,7 +502,7 @@
             that.configWidth = $('<input type="text" name="width">').appendTo(that.configBody);
             that.configWidth.val(parseInt(options.width));
             
-            that.configWidth.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configWidth.focusout(function(){                                                                                 /////////  Изменить ширину слайдера
                 
                 that.newWidth = options.width; 
                 
@@ -532,7 +514,7 @@
             $configStep =  $('<label>Step</label>').appendTo(that.configBody);
             that.configStep = $('<input type="text" name="step">').appendTo(that.configBody);
             that.configStep.val(options.step);
-            that.configStep.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configStep.focusout(function(){                                                                                 /////////  Изменить шаг
                 options.step =  that.configStep.val(); 
                 that.configStepChangedSubject.notifyObservers();
             });
@@ -541,7 +523,7 @@
             $configMinValue =  $('<label>MinValue</label>').appendTo(that.configBody);
             that.configMinValue = $('<input type="text" name="MinValue">').appendTo(that.configBody);
             that.configMinValue.val(options.minValue);
-            that.configMinValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configMinValue.focusout(function(){                                                                                 /////////  Изменить минимальное значение
                 options.minValue =  parseInt(that.configMinValue.val()); 
                 that.configMinValueChangedSubject.notifyObservers();
             });
@@ -550,21 +532,21 @@
             $configMaxValue =  $('<label>MaxValue</label>').appendTo(that.configBody);
             that.configMaxValue = $('<input type="text" name="MaxValue">').appendTo(that.configBody);
             that.configMaxValue.val(options.maxValue);
-            that.configMaxValue.focusout(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configMaxValue.focusout(function(){                                                                                 /////////  Изменить максимальное значение
                 options.maxValue =  that.configMaxValue.val(); 
                 that.configMaxValueChangedSubject.notifyObservers();
             });
 
             this.configPopupChangedSubject = SLIDER.makeObservableSubject();
             that.configPopup = $('<button name="popup">Popup</button>').appendTo(that.configBody);
-            that.configPopup.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configPopup.click(function(){                                                                                 /////////  Вкл/Выкл Подсказку
                 options.popup = !options.popup;
                 that.configPopupChangedSubject.notifyObservers();
             });
 
             this.configRangeChangedSubject = SLIDER.makeObservableSubject();
             that.configRange = $('<button name="range">Range</button>').appendTo(that.configBody);
-            that.configRange.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configRange.click(function(){                                                                                 /////////  Одиночное значение/диапазон
                 options.range = !options.range;
                 that.newRange = options.range;
                 that.configRangeChangedSubject.notifyObservers();
@@ -572,7 +554,7 @@
 
             this.configInputChangedSubject = SLIDER.makeObservableSubject();
             that.configInput = $('<button name="input">Input</button>').appendTo(that.configBody);
-            that.configInput.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configInput.click(function(){                                                                                 /////////  Вкл/Выкл Инпут
                 options.input = !options.input;
                 that.newInput = options.input;
                 that.configInputChangedSubject.notifyObservers();
@@ -580,7 +562,7 @@
 
             this.configVerticalChangedSubject = SLIDER.makeObservableSubject();
             that.configVertical = $('<button name="vertical">Vertical</button>').appendTo(that.configBody);
-            that.configVertical.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configVertical.click(function(){                                                                                 /////////  Вертикальный / горизонтальный вид
                 options.vertical = !options.vertical;
                 that.newVertical = options.vertical;
                 that.configVerticalChangedSubject.notifyObservers();
@@ -588,7 +570,7 @@
             
             this.configScaleChangedSubject = SLIDER.makeObservableSubject();
             that.configScale = $('<button name="scale">Scale</button>').appendTo(that.configBody);
-            that.configScale.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configScale.click(function(){                                                                                 /////////  Вкл/Выкл шкалу значений
                 options.scale = !options.scale;
                 that.newScale = options.scale;
                 that.configScaleChangedSubject.notifyObservers();
@@ -596,7 +578,7 @@
 
             this.configProgressChangedSubject = SLIDER.makeObservableSubject();
             that.configScale = $('<button name="progress">Progress Bar</button>').appendTo(that.configBody);
-            that.configScale.click(function(){                                                                                 /////////  Передвинуть ползунок на введенное в инпут значение
+            that.configScale.click(function(){                                                                                 /////////  Вкл/Выкл прогресс бар
                 options.progress = !options.progress;
                 that.newProgress = options.progress;
                 that.configProgressChangedSubject.notifyObservers();
