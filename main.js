@@ -81,6 +81,10 @@
                 that.handlerPositionWithRange = that.getHandlerPositionWithRange(that.minValue, that.maxValue, that.percentOfSlider);
                 that.handlerPositionWithStep = that.getHandlerPositionWithStep(that.handlerPositionWithRange, that.step);
                 that.getHandlerPositionToSlider(that.handlerPositionWithStep, that.minValue, that.maxValue, that.sliderWidth);
+                // that.startPositionFirst = that.getStartPosition(that.startPosition[0], that.step, that.minValue, that.maxValue, that.width);
+                // that.startPositionSecond = that.getStartPosition(that.startPosition[1], that.step, that.minValue, that.maxValue, that.sliderWidth);
+                // console.log(that.startPosition[0], that.step, that.minValue, that.maxValue, that.sliderWidth);
+                
 
                 that.modelChangedSubject.notifyObservers();
             });
@@ -122,6 +126,11 @@
                 return  that.handlerPositionToSlider;
             };
             
+            this.getStartPosition = function(startPosition, step, minValue, maxValue, width){
+                var newStartPosition = that.getHandlerPositionWithStep(startPosition, step);
+                return that.getHandlerPositionToSlider(newStartPosition, minValue, maxValue, width);
+            };
+            
             
 
         };
@@ -140,8 +149,8 @@
             view.setScale(options.minValue, options.maxValue, options.step);
             view.showScale(options.scale);
             view.getWidth(options.width);
-            model.setMinValue(options.minValue);
 
+            model.setMinValue(options.minValue);
             model.minValue = options.minValue;                  //// Передача опций в модель
             model.maxValue = options.maxValue;
             model.step = options.step;
@@ -151,29 +160,16 @@
             model.sliderTop = view.slider.offset().top;
             model.vertical = options.vertical;
             model.setDirection(options.vertical);
-              
-            var newStartPositionF = model.getHandlerPositionWithStep(options.startPosition[0], options.step);                                   /////// Рассчет стартовой позиции ползунка
-            newStartPositionF = model.getHandlerPositionToSlider(newStartPositionF, options.minValue, options.maxValue, options.width);
-            view.handler.css(model.direction, newStartPositionF - 10);
-
-            var newStartPositionS = model.getHandlerPositionWithStep(options.startPosition[1], options.step);                                   /////// Рассчет стартовой позиции второго ползунка
-            newStartPositionS = model.getHandlerPositionToSlider(newStartPositionS, options.minValue, options.maxValue, options.width);
-            view.handlerSecond.css(model.direction, newStartPositionS-10);
-
-            view.firstHandler = newStartPositionF;
-            view.secondHandlerPos = newStartPositionS;
-
-
-            var startProgress = (newStartPositionF/options.width)*100;                                                                          //////// Установка стартовой позиции прогресс-бара
-            var endProgress = (newStartPositionS/options.width)*100;
-            if (options.range){
-                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
-            } else {
-                view.slider.css('background', `linear-gradient(${model.directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
-            }
-
             
-
+            var newStartPositionFirst = model.getStartPosition(options.startPosition[0], options.step, options.minValue, options.maxValue, options.width);
+            view.newStartPositionFirst = newStartPositionFirst;
+           
+            var newStartPositionSecond = model.getStartPosition(options.startPosition[1], options.step, options.minValue, options.maxValue, options.width);
+            view.firstHandler = newStartPositionFirst;
+            view.secondHandlerPos = newStartPositionSecond;
+            
+            view.setStartPosition(view.firstHandler, view.secondHandlerPos, model.direction, options.range, options.width, model.directionProgress);
+            
             view.secondHandlerPos = model.handlerPositionToSlider;
             view.secondInput = options.startPosition[1];
             view.firstInput = options.startPosition[0];
@@ -230,7 +226,6 @@
             config.configWidthChangedSubject.addObserver(function () {
                 view.setWidth(config.configWidth.val());
                 model.sliderWidth = config.configWidth.val();
-                
             });
 
             config.configMaxValueChangedSubject.addObserver(function () {
@@ -481,9 +476,20 @@
                     that.handlerSecond.css('left', that.secondHandlerPos -10);
                     that.popup.css('top', -45);
                 }
-            }
+            };
             
-            
+            this.setStartPosition = function(newStartPositionFirst, newStartPositionSecond, direction, range, width, directionProgress){
+                that.handler.css(direction, newStartPositionFirst - 10);
+                that.handlerSecond.css(direction, newStartPositionSecond-10);
+                var startProgress = (newStartPositionFirst/that.width)*100;                                                                          //////// Установка стартовой позиции прогресс-бара
+                var endProgress = (newStartPositionSecond/that.width)*100;
+                if (range){
+                    that.slider.css('background', `linear-gradient(${directionProgress}, #e5e5e5 0%, #e5e5e5 ${startProgress}%, #e75735 ${startProgress}%, #e75735 ${endProgress}%, #e5e5e5 ${endProgress}%, #e5e5e5 100%)`);
+                } else {
+                    that.slider.css('background', `linear-gradient(${directionProgress}, #e75735 0%, #e75735 ${startProgress}%, #e5e5e5 ${startProgress}%, #e5e5e5 100%)`);
+                }
+
+            };
             
             
         };
